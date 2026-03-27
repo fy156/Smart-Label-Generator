@@ -21,7 +21,7 @@ jobs:
       run: |
         cd app
         npm install
-        ./node_modules/.bin/vite build
+        npm exec vite build
         cd ..
         if (Test-Path app/package.json) { Remove-Item app/package.json -Force }
       
