@@ -1,6 +1,6 @@
 {
   "name": "Smart-Label-Generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "智能标签生成器",
   "main": "main.js",
   "scripts": {
