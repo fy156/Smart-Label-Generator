@@ -8,6 +8,8 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: write  # 关键：允许写入 Releases
     
     steps:
     - uses: actions/checkout@v4
@@ -32,7 +34,7 @@ jobs:
       
     - name: Build EXE
       env:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 使用内置 Token
       run: npx electron-builder --win --x64 --publish always
       
     - name: Upload Artifact
