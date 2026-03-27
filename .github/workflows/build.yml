@@ -17,13 +17,14 @@ jobs:
         node-version: '20'
         
     - name: Build Frontend
+      shell: pwsh
       run: |
         cd app
         npm install
         npm run build
         cd ..
-        rm -f app/package.json
-        rm -f app/package.json.bak
+        if (Test-Path app/package.json) { Remove-Item app/package.json -Force }
+        if (Test-Path app/package.json.bak) { Remove-Item app/package.json.bak -Force }
       
     - name: Install Dependencies
       run: npm install
