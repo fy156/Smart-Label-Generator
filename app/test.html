@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Test</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    import React from 'https://esm.sh/react@19';
+    import ReactDOM from 'https://esm.sh/react-dom@19/client';
+    
+    function App() {
+      const [count, setCount] = React.useState(0);
+      return React.createElement('div', null, 
+        React.createElement('h1', null, 'Test Page'),
+        React.createElement('p', null, 'Count: ' + count),
+        React.createElement('button', { onClick: () => setCount(c => c + 1) }, 'Increment')
+      );
+    }
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+    console.log('React rendered');
+  </script>
+</body>
+</html>

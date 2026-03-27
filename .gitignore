@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+app/node_modules/
+
+# Build outputs
+dist/
+app/dist/
+
+# Electron
+*.app
+*.exe
+*.dmg
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
