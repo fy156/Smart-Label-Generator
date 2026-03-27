@@ -16,22 +16,29 @@ jobs:
       with:
         node-version: '20'
         
-    - name: Build Frontend
+    - name: Prepare for Electron Build
       shell: pwsh
       run: |
-        cd app
-        npm install
-        npm exec vite build
-        cd ..
+        # 删除 app/package.json 避免 Electron 检测冲突
         if (Test-Path app/package.json) { Remove-Item app/package.json -Force }
+        if (Test-Path app/package.json.bak) { Remove-Item app/package.json.bak -Force }
+        # 确保 dist 存在
+        if (!(Test-Path app/dist/index.html)) {
+          Write-Error "app/dist/index.html not found!"
+          exit 1
+        }
+        Write-Host "Using pre-built frontend from app/dist"
       
-    - name: Install Dependencies
-      run: npm install
+    - name: Install Electron Dependencies
+      run: |
+        npm install
+        npm install electron electron-builder --save-dev
       
     - name: Build EXE
-      run: npm run build:win
+      run: npx electron-builder --win --x64
       
-    - uses: actions/upload-artifact@v4
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
       with:
         name: Smart-Label-Generator-Windows
         path: dist/*.exe
