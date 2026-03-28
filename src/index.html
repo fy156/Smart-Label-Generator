@@ -1120,10 +1120,30 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             导入 Excel
           </button>
+          <select class="btn btn-secondary" id="exportScope" style="padding: 8px 12px; font-size: 14px; cursor: pointer;">
+            <option value="all">全部导出</option>
+            <option value="traffic">交通设施</option>
+            <option value="admin">行政区</option>
+            <option value="poi">服务设施</option>
+            <option value="infrastructure">基础设施</option>
+            <option value="industry">工业设施</option>
+            <option value="water">水系设施</option>
+          </select>
           <button class="btn btn-secondary" id="exportAllBtn" onclick="exportAllTags()" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            导出全部
+            批量导出
           </button>
+          <button class="btn btn-outline" id="clearBtn" onclick="clearData()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            清空
+          </button>
+          <button class="btn btn-ghost" onclick="downloadTemplate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            模板
+          </button>
+        </div>
+        <div class="controls" style="margin-top: 8px;">
+          <span style="color: #888; font-size: 12px; margin-right: 8px;">加载示例:</span>
           <button class="btn btn-outline" onclick="loadSampleData('traffic')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             交通设施
@@ -1148,17 +1168,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
             水系设施
           </button>
-          <button class="btn btn-outline" id="exportSampleBtn" onclick="exportSampleData()" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            导出示例
-          </button>
-          <button class="btn btn-outline" id="clearBtn" onclick="clearData()" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            清空
-          </button>
-          <button class="btn btn-ghost" onclick="downloadTemplate()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            模板
+          <button class="btn btn-outline" onclick="loadAllSampleData()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            全部示例
           </button>
         </div>
       </div>
@@ -1652,6 +1664,42 @@
       ]
     };
 
+    // 6大类型分类映射（用于导出筛选）
+    const typeToCategory = {};
+    const categoryNames = {
+      traffic: '交通设施',
+      admin: '行政区',
+      poi: '服务设施',
+      infrastructure: '基础设施',
+      industry: '工业设施',
+      water: '水系设施'
+    };
+    
+    // 建立具体类型到大类的反向映射
+    Object.entries(sampleData).forEach(([category, items]) => {
+      items.forEach(item => {
+        typeToCategory[item.类型] = category;
+      });
+    });
+    
+    // 动态获取标签的类别（用于导出的通用函数）
+    function getTagCategory(tag) {
+      // 先查映射表
+      if (typeToCategory[tag.类型]) {
+        return typeToCategory[tag.类型];
+      }
+      // 如果没有找到，尝试模糊匹配
+      const type = tag.类型;
+      if (/高速|国道|省道|县道|铁路|地铁|机场|港口|桥梁|隧道|公交|停车|加油|充电/.test(type)) return 'traffic';
+      if (/行政区|地级市|区县|乡镇|村|首都|省会|国界|省界|县界/.test(type)) return 'admin';
+      if (/餐厅|酒店|医院|学校|银行|商场|公园|景区|影院|厕所/.test(type)) return 'poi';
+      if (/电厂|变电站|水厂|通信|风电|光伏|水坝|管道|垃圾处理/.test(type)) return 'infrastructure';
+      if (/工厂|仓库|矿山|工业|纺织|食品|化工/.test(type)) return 'industry';
+      if (/河|湖|水库|瀑布|温泉|冰川|湿地|海岸|岛屿|码头/.test(type)) return 'water';
+      // 默认返回 null，表示未分类
+      return null;
+    }
+
     let tags = [];
     let toastId = 0;
     let isExporting = false;
@@ -1723,13 +1771,13 @@
       const statsTypes = document.getElementById('statsTypes');
       const exportAllBtn = document.getElementById('exportAllBtn');
       const clearBtn = document.getElementById('clearBtn');
-      const exportSampleBtn = document.getElementById('exportSampleBtn');
+      const exportScope = document.getElementById('exportScope');
 
       if (tags.length === 0) {
         stats.style.display = 'none';
         exportAllBtn.disabled = true;
         clearBtn.disabled = true;
-        exportSampleBtn.disabled = true;
+        if (exportScope) exportScope.disabled = true;
         return;
       }
 
@@ -1737,7 +1785,7 @@
       tagCount.textContent = tags.length;
       exportAllBtn.disabled = false;
       clearBtn.disabled = false;
-      exportSampleBtn.disabled = false;
+      if (exportScope) exportScope.disabled = false;
 
       const typeCount = {};
       tags.forEach(tag => { typeCount[tag.类型] = (typeCount[tag.类型] || 0) + 1; });
@@ -1924,6 +1972,27 @@
       showToast(`已加载${typeNames[type]}示例数据`);
     }
 
+    function loadAllSampleData() {
+      // 加载所有6类示例数据
+      let allData = [];
+      let idCounter = 0;
+      const timestamp = Date.now();
+      
+      Object.entries(sampleData).forEach(([category, items]) => {
+        items.forEach(item => {
+          allData.push({
+            ...item,
+            id: `${timestamp}-${idCounter++}`
+          });
+        });
+      });
+      
+      tags = allData;
+      currentSampleType = 'all';
+      renderTags();
+      showToast(`已加载全部6类示例数据，共${allData.length}个标签`);
+    }
+
     async function exportSampleData() {
       if (tags.length === 0) {
         showToast('没有可导出的示例数据');
@@ -1981,11 +2050,11 @@
     }
 
     async function downloadTemplate() {
-      const templateData = [
-        { 标签名称: '示例标签1', 类型: '机场' },
-        { 标签名称: '示例标签2', 类型: '高速公路' },
-        { 标签名称: '示例标签3', 类型: '医院' },
-      ];
+      // 收集全部示例数据（6大类所有数据）
+      const templateData = Object.values(sampleData).flat();
+      
+      // 收集所有可用类型（用于下拉列表）
+      const allTypes = Object.values(sampleData).flat().map(item => item.类型);
       
       // Electron 环境使用 IPC（主进程处理 XLSX），浏览器环境使用原方法
       if (window.require) {
@@ -1993,7 +2062,8 @@
           const { ipcRenderer } = window.require('electron');
           const result = await ipcRenderer.invoke('export-excel', {
             data: templateData,
-            fileName: '标签导入模板.xlsx'
+            fileName: '标签导入模板.xlsx',
+            typeOptions: allTypes  // 传递类型列表用于下拉
           });
           if (result.success) {
             showToast('模板下载成功');
@@ -2429,16 +2499,68 @@
       }
 
       const format = document.getElementById('exportFormat').value;
+      const exportScope = document.getElementById('exportScope').value;
+      
+      // 根据导出范围筛选标签
+      let tagsToExport = tags;
+      let exportTypeName = '';
+      
+      console.log(`[批量导出] 导出范围: ${exportScope}, 总标签数: ${tags.length}`);
+      console.log(`[批量导出] 标签类型分布:`, tags.reduce((acc, tag) => {
+        const cat = getTagCategory(tag) || '未分类';
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      }, {}));
+      
+      if (exportScope !== 'all') {
+        tagsToExport = tags.filter(tag => getTagCategory(tag) === exportScope);
+        exportTypeName = categoryNames[exportScope];
+        console.log(`[批量导出] 筛选后标签数: ${tagsToExport.length}, 类型: ${exportTypeName}`);
+        if (tagsToExport.length === 0) {
+          showToast(`没有${exportTypeName}类型的标签可导出`);
+          return;
+        }
+      }
+      
+      // 提前获取 Electron API（如果可用）
+      const electronAPI = window.require ? window.require('electron') : null;
+      const ipcRenderer = electronAPI ? electronAPI.ipcRenderer : null;
+      const isElectron = !!ipcRenderer;
+      
+      console.log(`[批量导出] 环境检测: isElectron=${isElectron}`);
+      
+      // 所有格式导出前，先选择保存路径（Electron环境）
+      let folderPath = null;
+      
+      if (isElectron) {
+        try {
+          const folderResult = await ipcRenderer.invoke('select-folder');
+          console.log(`[批量导出] 选择文件夹结果:`, folderResult);
+          if (!folderResult.success) {
+            showToast('已取消导出');
+            return;
+          }
+          folderPath = folderResult.folderPath;
+          showToast(`📁 已选择保存路径: ${folderPath}`, 3000);
+        } catch (err) {
+          console.error(`[批量导出] 选择文件夹失败:`, err);
+          showToast('选择文件夹失败: ' + err.message);
+          return;
+        }
+      } else {
+        console.log(`[批量导出] 浏览器环境，使用单独下载`);
+      }
+      
+      isExporting = true;
       
       // JSON格式特殊处理：合并所有标签到一个文件
       if (format === 'json') {
-        isExporting = true;
         showToast('正在生成合并JSON文件...');
         
         try {
           const allLabels = [];
-          for (let i = 0; i < tags.length; i++) {
-            const tag = tags[i];
+          for (let i = 0; i < tagsToExport.length; i++) {
+            const tag = tagsToExport[i];
             const jsonData = buildTagJSON(tag, i);
             const labelData = jsonData.vertical_label_adapted;
             
@@ -2486,21 +2608,25 @@
           };
           
           const jsonContent = JSON.stringify(mergedJSON, null, 2);
-          const fileName = `标签集合_${allLabels.length}个.json`;
+          const fileName = exportTypeName 
+            ? `标签集合_${exportTypeName}_${allLabels.length}个.json`
+            : `标签集合_${allLabels.length}个.json`;
           
-          // Electron 环境使用 IPC
-          if (window.require) {
+          // Electron 环境使用 IPC 保存到指定文件夹
+          if (window.require && ipcRenderer && folderPath) {
             try {
-              const { ipcRenderer } = window.require('electron');
               const encoder = new TextEncoder();
               const data = encoder.encode(jsonContent);
               const result = await ipcRenderer.invoke('save-file', {
                 data: Array.from(data),
                 fileName: fileName,
-                filters: [{ name: 'JSON 文件', extensions: ['json'] }]
+                filters: [{ name: 'JSON 文件', extensions: ['json'] }],
+                folderPath: folderPath
               });
               if (result.success) {
-                showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+                showToast(`✅ 成功导出 ${allLabels.length} 个标签到:\n${folderPath}`, 5000);
+              } else {
+                showToast('导出失败: ' + (result.error || '未知错误'));
               }
             } catch (err) {
               showToast('导出失败: ' + err.message);
@@ -2516,7 +2642,7 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+            showToast(`成功导出 ${allLabels.length} 个标签`);
           }
         } catch (error) {
           console.error('导出JSON失败:', error);
@@ -2529,13 +2655,12 @@
       
       // CIM标准格式特殊处理：合并所有标签到一个文件
       if (format === 'cim') {
-        isExporting = true;
         showToast('正在生成CIM标准格式文件...');
         
         try {
           const allPOIs = [];
-          for (let i = 0; i < tags.length; i++) {
-            const tag = tags[i];
+          for (let i = 0; i < tagsToExport.length; i++) {
+            const tag = tagsToExport[i];
             const poiData = buildTagCIMJSON(tag, i);
             allPOIs.push(poiData);
           }
@@ -2545,21 +2670,25 @@
           };
           
           const jsonContent = JSON.stringify(mergedJSON, null, 2);
-          const fileName = `CIM_POI集合_${allPOIs.length}个.json`;
+          const fileName = exportTypeName
+            ? `CIM_POI集合_${exportTypeName}_${allPOIs.length}个.json`
+            : `CIM_POI集合_${allPOIs.length}个.json`;
           
-          // Electron 环境使用 IPC
-          if (window.require) {
+          // Electron 环境使用 IPC 保存到指定文件夹
+          if (window.require && ipcRenderer && folderPath) {
             try {
-              const { ipcRenderer } = window.require('electron');
               const encoder = new TextEncoder();
               const data = encoder.encode(jsonContent);
               const result = await ipcRenderer.invoke('save-file', {
                 data: Array.from(data),
                 fileName: fileName,
-                filters: [{ name: 'JSON 文件', extensions: ['json'] }]
+                filters: [{ name: 'JSON 文件', extensions: ['json'] }],
+                folderPath: folderPath
               });
               if (result.success) {
-                showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+                showToast(`✅ 成功导出 ${allPOIs.length} 个POI到:\n${folderPath}`, 5000);
+              } else {
+                showToast('导出失败: ' + (result.error || '未知错误'));
               }
             } catch (err) {
               showToast('导出失败: ' + err.message);
@@ -2575,7 +2704,7 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+            showToast(`成功导出 ${allPOIs.length} 个POI`);
           }
         } catch (error) {
           console.error('导出CIM格式失败:', error);
@@ -2586,21 +2715,39 @@
         return;
       }
       
-      showToast(`开始批量导出 ${format.toUpperCase()}...`);
-      
-      isExporting = true;
+      showToast(exportTypeName 
+        ? `开始批量导出 ${exportTypeName} - ${format.toUpperCase()}...`
+        : `开始批量导出 ${format.toUpperCase()}...`);
       let successCount = 0;
       const resScale = parseInt(document.getElementById('resSelect').value);
 
-      for (let i = 0; i < tags.length; i++) {
-        const tag = tags[i];
+      console.log(`[批量导出] 开始导出 ${tagsToExport.length} 个标签到 ${folderPath}`);
+
+      // 收集所有图片文件
+      const imageFiles = [];
+      
+      for (let i = 0; i < tagsToExport.length; i++) {
+        const tag = tagsToExport[i];
+        console.log(`[批量导出] 处理第 ${i + 1}/${tagsToExport.length} 个: ${tag.标签名称}`);
+        
         try {
           const tagElement = document.getElementById(`tag-${tag.id}`);
-          if (!tagElement) continue;
+          if (!tagElement) {
+            console.error(`[批量导出] 找不到元素: tag-${tag.id}`);
+            continue;
+          }
+
+          // 滚动到可视区域确保元素可以被渲染
+          tagElement.scrollIntoView({ behavior: 'instant', block: 'center' });
+          
+          // 等待一小段时间让渲染完成
+          await new Promise(resolve => setTimeout(resolve, 50));
 
           tagElement.style.transform = 'none';
           
           const bgColor = format === 'jpg' ? '#FFFFFF' : null;
+          console.log(`[批量导出] 渲染 canvas: ${tag.标签名称}`);
+          
           const canvas = await html2canvas(tagElement, {
             backgroundColor: bgColor,
             scale: resScale,
@@ -2618,6 +2765,7 @@
           });
 
           tagElement.style.transform = '';
+          console.log(`[批量导出] Canvas 渲染完成: ${tag.标签名称}`);
 
           let blob;
           switch (format) {
@@ -2627,29 +2775,23 @@
             case 'jpg': blob = await canvasToJPG(canvas); break;
             default: blob = canvasToTGA(canvas);
           }
+          console.log(`[批量导出] Blob 生成完成: ${tag.标签名称}, 大小: ${blob.size}`);
 
-          // Electron 环境使用 IPC 保存文件
-          if (window.require) {
-            try {
-              const { ipcRenderer } = window.require('electron');
-              const arrayBuffer = await blob.arrayBuffer();
-              const result = await ipcRenderer.invoke('save-file', {
-                data: Array.from(new Uint8Array(arrayBuffer)),
-                fileName: `${tag.标签名称}_标签.${format}`,
-                filters: [{ name: format.toUpperCase(), extensions: [format] }]
-              });
-              if (result.success) {
-                successCount++;
-              }
-            } catch (err) {
-              console.error(`导出标签 ${tag.标签名称} 失败:`, err);
-            }
+          // Electron 环境：收集图片到数组；浏览器环境：直接下载
+          if (isElectron) {
+            const arrayBuffer = await blob.arrayBuffer();
+            const safeFileName = `${i + 1}_${tag.标签名称}_标签.${format}`.replace(/[<>:"\/\\|?*]/g, '_');
+            imageFiles.push({
+              name: safeFileName,
+              buffer: Array.from(new Uint8Array(arrayBuffer))
+            });
+            successCount++;
           } else {
-            // 浏览器环境使用下载链接
+            // 浏览器环境
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${tag.标签名称}_标签.${format}`;
+            link.download = `${i + 1}_${tag.标签名称}_标签.${format}`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -2657,14 +2799,63 @@
             successCount++;
           }
 
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
-          console.error(`导出标签 ${tag.标签名称} 失败:`, error);
+          console.error(`[批量导出] ❌ 导出标签 ${tag.标签名称} 失败:`, error);
         }
+      }
+      
+      // Electron 环境：生成 ZIP 压缩包
+      if (isElectron && imageFiles.length > 0) {
+        try {
+          console.log(`[批量导出] 开始创建 ZIP，包含 ${imageFiles.length} 个文件`);
+          showToast(`正在创建压缩包，请稍候...`, 5000);
+          
+          // 生成 ZIP 文件名：标签导出_2024-01-15_15-30-00.zip
+          const now = new Date();
+          const dateStr = now.toISOString().slice(0, 10);
+          const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
+          const zipName = exportTypeName 
+            ? `标签导出_${exportTypeName}_${dateStr}_${timeStr}.zip`
+            : `标签导出_${dateStr}_${timeStr}.zip`;
+          
+          console.log(`[批量导出] 调用 create-zip: folderPath=${folderPath}, zipName=${zipName}`);
+          
+          const zipResult = await ipcRenderer.invoke('create-zip', {
+            files: imageFiles,
+            folderPath: folderPath,
+            zipName: zipName
+          });
+          
+          console.log(`[批量导出] create-zip 返回:`, zipResult);
+          
+          if (zipResult.success) {
+            const sizeMB = (zipResult.size / 1024 / 1024).toFixed(2);
+            console.log(`[批量导出] ✅ ZIP 创建成功: ${zipResult.filePath}, 大小: ${sizeMB} MB`);
+            showToast(`✅ 导出完成!\n${imageFiles.length} 个标签已压缩\n大小: ${sizeMB} MB\n路径: ${zipResult.filePath}`, 10000);
+          } else {
+            console.error(`[批量导出] ❌ ZIP 创建失败: ${zipResult.error}`);
+            showToast(`⚠️ 压缩失败: ${zipResult.error}`, 5000);
+          }
+        } catch (err) {
+          console.error(`[批量导出] ❌ 创建 ZIP 异常:`, err);
+          showToast(`⚠️ 压缩异常: ${err.message}`, 5000);
+        }
+      } else {
+        console.log(`[批量导出] 跳过ZIP: isElectron=${isElectron}, imageFiles.length=${imageFiles.length}`);
       }
 
       isExporting = false;
-      showToast(`批量导出完成: ${successCount}/${tags.length}`);
+      console.log(`[批量导出] 完成: ${successCount}/${tagsToExport.length}, imageFiles: ${imageFiles.length}`);
+      
+      // 浏览器环境显示完成提示（Electron环境在ZIP创建部分已显示）
+      if (!isElectron && successCount > 0) {
+        showToast(`✅ 批量导出完成: ${successCount}/${tagsToExport.length}`);
+      } else if (!isElectron && successCount === 0) {
+        showToast(`⚠️ 导出失败，请检查控制台日志 (F12)`);
+      } else if (isElectron && imageFiles.length === 0) {
+        showToast(`⚠️ 没有图片被收集，请检查控制台日志 (F12)`);
+      }
     }
   </script>
 </body>

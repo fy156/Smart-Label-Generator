@@ -75,6 +75,7 @@
     "electron-builder": "^24.0.0"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "html2canvas": "^1.4.1",
     "xlsx": "^0.18.5"
   }
