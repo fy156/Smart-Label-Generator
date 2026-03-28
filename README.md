@@ -55,6 +55,39 @@ npm run build:all
 - CIM标准格式（POI JSON）
 - 图片格式（PNG/BMP/JPG/TGA）
 
+## 修复历史
+
+### 2026-03-26 Electron 打包版导入/导出功能修复
+
+#### 修复1：导入Excel功能
+- **问题**: 打包后导入弹出两次选择框，提示 "XLSX.read is not a function"
+- **修复措施**:
+  - 新增 `importExcel()` 函数分离 Electron/浏览器路径
+  - Electron环境直接调用 IPC (`open-file`)
+  - 浏览器环境才触发 file input
+  - 修改按钮 `onclick="importExcel()"`
+
+#### 修复2：批量导出标签（JSON/CIM格式）
+- **问题**: 打包后导出失败，无错误提示
+- **修复措施**:
+  - JSON格式导出添加 IPC 支持 (`save-file`)
+  - CIM格式导出添加 IPC 支持
+  - 使用 `TextEncoder` 将 JSON 转为 Uint8Array
+  - 浏览器环境保持原有 `link.click()` 方式
+
+#### 修复3：导出示例数据
+- **问题**: 选择示例数据后无法导出Excel
+- **修复措施**:
+  - `exportSampleData()` 改为 async 函数
+  - Electron环境使用 `XLSX.write()` + IPC
+  - 浏览器环境保持 `XLSX.writeFile()`
+
+#### 修复4：下载模板
+- **修复措施**:
+  - `downloadTemplate()` 改为 async 函数
+  - Electron环境使用 `XLSX.write()` + IPC
+  - 浏览器环境保持 `XLSX.writeFile()`
+
 ## 许可证
 
 MIT License

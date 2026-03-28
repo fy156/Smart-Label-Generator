@@ -4,6 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>智能标签生成器 - UE数字孪生艺术科技版</title>
+  <!--
+  ================================================================================
+  修复汇总 (Fixes Summary)
+  ================================================================================
+  
+  [修复1] 导入Excel功能 - 2026-03-26
+  问题: 打包后导入弹出两次选择框，提示 "XLSX.read is not a function"
+  修复: 
+    - 新增 importExcel() 函数分离 Electron/浏览器路径
+    - Electron环境直接调用 IPC (open-file)
+    - 浏览器环境才触发 file input
+    - 修改按钮 onclick="importExcel()"
+  
+  [修复2] 批量导出标签(JSON/CIM格式) - 2026-03-26
+  问题: 打包后导出失败，无错误提示
+  修复:
+    - JSON格式导出添加 IPC 支持 (save-file)
+    - CIM格式导出添加 IPC 支持
+    - 使用 TextEncoder 将 JSON 转为 Uint8Array
+    - 浏览器环境保持原有 link.click() 方式
+  
+  [修复3] 导出示例数据 - 2026-03-26
+  问题: 选择示例数据后无法导出Excel
+  修复:
+    - exportSampleData() 改为 async 函数
+    - Electron环境使用 XLSX.write() + IPC
+    - 浏览器环境保持 XLSX.writeFile()
+  
+  [修复4] 下载模板 - 2026-03-26
+  修复:
+    - downloadTemplate() 改为 async 函数
+    - Electron环境使用 XLSX.write() + IPC
+    - 浏览器环境保持 XLSX.writeFile()
+  
+  ================================================================================
+  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
@@ -1034,7 +1070,7 @@
         </div>
         <div class="controls">
           <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
-          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+          <button class="btn btn-primary" onclick="importExcel()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             导入 Excel
           </button>
@@ -1177,7 +1213,7 @@
       <h3 class="empty-title">暂无标签数据</h3>
       <p class="empty-desc">请导入 Excel 文件，或点击上方按钮加载示例数据预览</p>
       <div class="empty-actions">
-        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+        <button class="btn btn-primary" onclick="importExcel()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           导入 Excel
         </button>
@@ -1762,10 +1798,8 @@
       return newTags;
     }
 
-    document.getElementById('fileInput').addEventListener('change', async function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
+    // 导入 Excel 主函数（Electron/浏览器自动适配）
+    async function importExcel() {
       // Electron 环境使用 IPC
       if (window.require) {
         try {
@@ -1785,9 +1819,17 @@
         } catch (err) {
           showToast('导入失败: ' + err.message);
         }
-        this.value = '';
         return;
       }
+      
+      // 浏览器环境：触发 file input
+      document.getElementById('fileInput').click();
+    }
+
+    // fileInput 只在浏览器环境使用
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
       // 浏览器环境使用 FileReader
       const reader = new FileReader();
@@ -2391,17 +2433,39 @@
             }
           };
           
-          const blob = new Blob([JSON.stringify(mergedJSON, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `标签集合_${allLabels.length}个.json`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+          const jsonContent = JSON.stringify(mergedJSON, null, 2);
+          const fileName = `标签集合_${allLabels.length}个.json`;
           
-          showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+          // Electron 环境使用 IPC
+          if (window.require) {
+            try {
+              const { ipcRenderer } = window.require('electron');
+              const encoder = new TextEncoder();
+              const data = encoder.encode(jsonContent);
+              const result = await ipcRenderer.invoke('save-file', {
+                data: Array.from(data),
+                fileName: fileName,
+                filters: [{ name: 'JSON 文件', extensions: ['json'] }]
+              });
+              if (result.success) {
+                showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+              }
+            } catch (err) {
+              showToast('导出失败: ' + err.message);
+            }
+          } else {
+            // 浏览器环境使用下载链接
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+          }
         } catch (error) {
           console.error('导出JSON失败:', error);
           showToast('导出JSON失败');
@@ -2428,17 +2492,39 @@
             "pois": allPOIs
           };
           
-          const blob = new Blob([JSON.stringify(mergedJSON, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `CIM_POI集合_${allPOIs.length}个.json`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+          const jsonContent = JSON.stringify(mergedJSON, null, 2);
+          const fileName = `CIM_POI集合_${allPOIs.length}个.json`;
           
-          showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+          // Electron 环境使用 IPC
+          if (window.require) {
+            try {
+              const { ipcRenderer } = window.require('electron');
+              const encoder = new TextEncoder();
+              const data = encoder.encode(jsonContent);
+              const result = await ipcRenderer.invoke('save-file', {
+                data: Array.from(data),
+                fileName: fileName,
+                filters: [{ name: 'JSON 文件', extensions: ['json'] }]
+              });
+              if (result.success) {
+                showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+              }
+            } catch (err) {
+              showToast('导出失败: ' + err.message);
+            }
+          } else {
+            // 浏览器环境使用下载链接
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+          }
         } catch (error) {
           console.error('导出CIM格式失败:', error);
           showToast('导出CIM格式失败');
