@@ -52,10 +52,31 @@
     - 将 Blob 转为 ArrayBuffer 再转为数组传输
     - 浏览器环境保持原有 link.click() 方式
   
+  [修复7] 强制 XLSX 挂载到 window（方案A）- 2026-03-28
+  问题: 打包后 XLSX.read is not a function（nodeIntegration 冲突）
+  根因: Electron nodeIntegration: true 时，XLSX 导出为 module.exports 而非 window.XLSX
+  修复:
+    - 在 XLSX 脚本后添加代码，检测 XLSX 是否定义
+    - 未定义时使用 require('./lib/xlsx.full.min.js') 强制挂载到 window.XLSX
+    - 确保渲染进程代码中 XLSX 全局可用
+  
   ================================================================================
   -->
   <!-- XLSX 库本地离线化，避免打包后网络加载失败 -->
   <script src="lib/xlsx.full.min.js"></script>
+  <script>
+    // 强制 XLSX 挂载到 window（解决 Electron nodeIntegration 问题）
+    // 当 nodeIntegration: true 时，XLSX 会导出为 module.exports 而不是 window.XLSX
+    if (typeof XLSX === 'undefined' && typeof require !== 'undefined') {
+      try {
+        window.XLSX = require('./lib/xlsx.full.min.js');
+      } catch (e) {
+        console.error('XLSX 加载失败:', e);
+      }
+    } else if (typeof XLSX !== 'undefined') {
+      window.XLSX = XLSX;
+    }
+  </script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }

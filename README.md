@@ -102,6 +102,14 @@ npm run build:all
   - 将 Blob 转为 ArrayBuffer 再转为数组传输
   - 浏览器环境保持原有 `link.click()` 方式
 
+#### 修复7：强制 XLSX 挂载到 window（方案A）- 2026-03-28
+- **问题**: 打包后提示 "XLSX.read is not a function"
+- **根因**: Electron `nodeIntegration: true` 时，XLSX 检测到 Node.js 环境，将自身导出为 `module.exports` 而不是挂载到 `window.XLSX`
+- **修复措施**:
+  - 在 XLSX 脚本后添加代码，检测 `typeof XLSX`
+  - 未定义时使用 `require('./lib/xlsx.full.min.js')` 强制挂载到 `window.XLSX`
+  - 确保渲染进程代码中 XLSX 全局可用
+
 ## 许可证
 
 MIT License
