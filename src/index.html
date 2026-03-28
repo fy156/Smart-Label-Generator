@@ -1044,6 +1044,67 @@
       animation: toastIn 0.3s ease, toastOut 0.3s ease 1.7s forwards;
     }
 
+    /* 进度条 */
+    .progress-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-overlay.active {
+      display: flex;
+    }
+
+    .progress-box {
+      background: rgba(20, 20, 30, 0.95);
+      border: 1px solid rgba(90, 170, 255, 0.3);
+      border-radius: 12px;
+      padding: 32px 48px;
+      min-width: 400px;
+      text-align: center;
+    }
+
+    .progress-title {
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .progress-status {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 24px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4aa, #5aaaff);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-text {
+      font-size: 14px;
+      color: #5aaaff;
+    }
+
     @keyframes toastIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1281,6 +1342,18 @@
   </main>
 
   <div class="toast-container" id="toastContainer"></div>
+
+  <!-- 批量导出进度条 -->
+  <div class="progress-overlay" id="progressOverlay">
+    <div class="progress-box">
+      <div class="progress-title" id="progressTitle">正在批量导出</div>
+      <div class="progress-status" id="progressStatus">准备中...</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
+  </div>
 
   <script>
     // ========== 6大类图例 Emoji图标映射 ==========
@@ -1713,6 +1786,38 @@
       toast.textContent = message;
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 2000);
+    }
+
+    // 进度条控制
+    function showProgress(title, status) {
+      const overlay = document.getElementById('progressOverlay');
+      const titleEl = document.getElementById('progressTitle');
+      const statusEl = document.getElementById('progressStatus');
+      const fillEl = document.getElementById('progressBarFill');
+      const textEl = document.getElementById('progressText');
+      
+      titleEl.textContent = title || '正在处理...';
+      statusEl.textContent = status || '准备中...';
+      fillEl.style.width = '0%';
+      textEl.textContent = '0%';
+      overlay.classList.add('active');
+    }
+
+    function updateProgress(percent, status) {
+      const fillEl = document.getElementById('progressBarFill');
+      const textEl = document.getElementById('progressText');
+      const statusEl = document.getElementById('progressStatus');
+      
+      fillEl.style.width = percent + '%';
+      textEl.textContent = Math.round(percent) + '%';
+      if (status) {
+        statusEl.textContent = status;
+      }
+    }
+
+    function hideProgress() {
+      const overlay = document.getElementById('progressOverlay');
+      overlay.classList.remove('active');
     }
 
     function getIconSVG(type) {
@@ -2715,95 +2820,101 @@
         return;
       }
       
-      showToast(exportTypeName 
-        ? `开始批量导出 ${exportTypeName} - ${format.toUpperCase()}...`
-        : `开始批量导出 ${format.toUpperCase()}...`);
+      // 显示进度条
+      showProgress(
+        exportTypeName ? `批量导出 ${exportTypeName}` : '批量导出全部',
+        `准备导出 ${tagsToExport.length} 个标签...`
+      );
+      
       let successCount = 0;
       const resScale = parseInt(document.getElementById('resSelect').value);
 
       console.log(`[批量导出] 开始导出 ${tagsToExport.length} 个标签到 ${folderPath}`);
 
-      // 收集所有图片文件
+      // 收集所有图片文件（在 try 外部声明，以便在 finally 中访问）
       const imageFiles = [];
       
-      for (let i = 0; i < tagsToExport.length; i++) {
-        const tag = tagsToExport[i];
-        console.log(`[批量导出] 处理第 ${i + 1}/${tagsToExport.length} 个: ${tag.标签名称}`);
-        
-        try {
-          const tagElement = document.getElementById(`tag-${tag.id}`);
-          if (!tagElement) {
-            console.error(`[批量导出] 找不到元素: tag-${tag.id}`);
-            continue;
-          }
-
-          // 滚动到可视区域确保元素可以被渲染
-          tagElement.scrollIntoView({ behavior: 'instant', block: 'center' });
+      try {
+        for (let i = 0; i < tagsToExport.length; i++) {
+          const tag = tagsToExport[i];
+          const progress = ((i + 1) / tagsToExport.length) * 100;
+          updateProgress(progress, `正在导出: ${tag.标签名称} (${i + 1}/${tagsToExport.length})`);
+          console.log(`[批量导出] 处理第 ${i + 1}/${tagsToExport.length} 个: ${tag.标签名称}`);
           
-          // 等待一小段时间让渲染完成
-          await new Promise(resolve => setTimeout(resolve, 50));
-
-          tagElement.style.transform = 'none';
-          
-          const bgColor = format === 'jpg' ? '#FFFFFF' : null;
-          console.log(`[批量导出] 渲染 canvas: ${tag.标签名称}`);
-          
-          const canvas = await html2canvas(tagElement, {
-            backgroundColor: bgColor,
-            scale: resScale,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            removeContainer: true,
-            onclone: function(clonedDoc) {
-              const clonedElement = clonedDoc.getElementById(`tag-${tag.id}`);
-              if (clonedElement) {
-                clonedElement.style.animation = 'none';
-                clonedElement.style.transform = 'none';
-              }
+          try {
+            const tagElement = document.getElementById(`tag-${tag.id}`);
+            if (!tagElement) {
+              console.error(`[批量导出] 找不到元素: tag-${tag.id}`);
+              continue;
             }
-          });
 
-          tagElement.style.transform = '';
-          console.log(`[批量导出] Canvas 渲染完成: ${tag.标签名称}`);
+            // 滚动到可视区域确保元素可以被渲染
+            tagElement.scrollIntoView({ behavior: 'instant', block: 'center' });
+            
+            // 等待一小段时间让渲染完成
+            await new Promise(resolve => setTimeout(resolve, 50));
 
-          let blob;
-          switch (format) {
-            case 'tga': blob = canvasToTGA(canvas); break;
-            case 'png': blob = await canvasToPNG(canvas); break;
-            case 'bmp': blob = canvasToBMP(canvas); break;
-            case 'jpg': blob = await canvasToJPG(canvas); break;
-            default: blob = canvasToTGA(canvas);
-          }
-          console.log(`[批量导出] Blob 生成完成: ${tag.标签名称}, 大小: ${blob.size}`);
-
-          // Electron 环境：收集图片到数组；浏览器环境：直接下载
-          if (isElectron) {
-            const arrayBuffer = await blob.arrayBuffer();
-            const safeFileName = `${i + 1}_${tag.标签名称}_标签.${format}`.replace(/[<>:"\/\\|?*]/g, '_');
-            imageFiles.push({
-              name: safeFileName,
-              buffer: Array.from(new Uint8Array(arrayBuffer))
+            tagElement.style.transform = 'none';
+            
+            const bgColor = format === 'jpg' ? '#FFFFFF' : null;
+            console.log(`[批量导出] 渲染 canvas: ${tag.标签名称}`);
+            
+            const canvas = await html2canvas(tagElement, {
+              backgroundColor: bgColor,
+              scale: resScale,
+              useCORS: true,
+              allowTaint: true,
+              logging: false,
+              removeContainer: true,
+              onclone: function(clonedDoc) {
+                const clonedElement = clonedDoc.getElementById(`tag-${tag.id}`);
+                if (clonedElement) {
+                  clonedElement.style.animation = 'none';
+                  clonedElement.style.transform = 'none';
+                }
+              }
             });
-            successCount++;
-          } else {
-            // 浏览器环境
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${i + 1}_${tag.标签名称}_标签.${format}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            successCount++;
-          }
 
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (error) {
-          console.error(`[批量导出] ❌ 导出标签 ${tag.标签名称} 失败:`, error);
+            tagElement.style.transform = '';
+            console.log(`[批量导出] Canvas 渲染完成: ${tag.标签名称}`);
+
+            let blob;
+            switch (format) {
+              case 'tga': blob = canvasToTGA(canvas); break;
+              case 'png': blob = await canvasToPNG(canvas); break;
+              case 'bmp': blob = canvasToBMP(canvas); break;
+              case 'jpg': blob = await canvasToJPG(canvas); break;
+              default: blob = canvasToTGA(canvas);
+            }
+            console.log(`[批量导出] Blob 生成完成: ${tag.标签名称}, 大小: ${blob.size}`);
+
+            // Electron 环境：收集图片到数组；浏览器环境：直接下载
+            if (isElectron) {
+              const arrayBuffer = await blob.arrayBuffer();
+              const safeFileName = `${i + 1}_${tag.标签名称}_标签.${format}`.replace(/[<>:"\/\\|?*]/g, '_');
+              imageFiles.push({
+                name: safeFileName,
+                buffer: Array.from(new Uint8Array(arrayBuffer))
+              });
+              successCount++;
+            } else {
+              // 浏览器环境
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `${i + 1}_${tag.标签名称}_标签.${format}`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              successCount++;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (error) {
+            console.error(`[批量导出] ❌ 导出标签 ${tag.标签名称} 失败:`, error);
+          }
         }
-      }
       
       // Electron 环境：生成 ZIP 压缩包
       if (isElectron && imageFiles.length > 0) {
@@ -2845,16 +2956,22 @@
         console.log(`[批量导出] 跳过ZIP: isElectron=${isElectron}, imageFiles.length=${imageFiles.length}`);
       }
 
+      } catch (error) {
+        console.error('[批量导出] 导出过程出错:', error);
+        showToast('导出过程出错: ' + error.message);
+      } finally {
+        // 隐藏进度条
+        hideProgress();
+      }
+      
       isExporting = false;
-      console.log(`[批量导出] 完成: ${successCount}/${tagsToExport.length}, imageFiles: ${imageFiles.length}`);
+      console.log(`[批量导出] 完成: ${successCount}/${tagsToExport.length}`);
       
       // 浏览器环境显示完成提示（Electron环境在ZIP创建部分已显示）
       if (!isElectron && successCount > 0) {
         showToast(`✅ 批量导出完成: ${successCount}/${tagsToExport.length}`);
       } else if (!isElectron && successCount === 0) {
         showToast(`⚠️ 导出失败，请检查控制台日志 (F12)`);
-      } else if (isElectron && imageFiles.length === 0) {
-        showToast(`⚠️ 没有图片被收集，请检查控制台日志 (F12)`);
       }
     }
   </script>
