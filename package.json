@@ -23,15 +23,36 @@
       "assets/**/*",
       "node_modules/**/*"
     ],
+    "extraMetadata": {
+      "name": "smart-label-generator"
+    },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
       "icon": "assets/icon.icns",
-      "artifactName": "智能标签生成器-${version}-${arch}.${ext}"
+      "artifactName": "SmartLabelGenerator-${version}-${arch}.${ext}"
     },
     "win": {
-      "target": ["nsis", "portable"],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "assets/icon.ico",
-      "artifactName": "智能标签生成器-${version}.${ext}"
+      "artifactName": "SmartLabelGenerator-${version}.${ext}"
     },
     "publish": {
       "provider": "github",

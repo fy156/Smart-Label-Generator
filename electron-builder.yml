@@ -1,0 +1,35 @@
+appId: com.yourcompany.smart-label-generator
+productName: SmartLabelGenerator
+copyright: Copyright © 2026 fy156
+
+directories:
+  output: release
+
+files:
+  - electron/**/*
+  - src/**/*
+  - assets/**/*
+  - node_modules/**/*
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+    - target: zip
+      arch: [x64, arm64]
+  icon: assets/icon.icns
+  artifactName: SmartLabelGenerator-${version}-${arch}.${ext}
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+  icon: assets/icon.ico
+  artifactName: SmartLabelGenerator-${version}.${ext}
+
+publish:
+  provider: github
+  owner: fy156
+  repo: Smart-Label-Generator
