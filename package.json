@@ -12,8 +12,8 @@
   },
   "build": {
     "appId": "com.yourcompany.smart-label-generator",
-    "productName": "智能标签生成器",
-    "artifactName": "${productName}-${version}.${ext}",
+    "productName": "SmartLabelGenerator",
+    "copyright": "Copyright © 2026 fy156",
     "directories": {
       "output": "release"
     },
@@ -26,12 +26,12 @@
     "mac": {
       "target": ["dmg", "zip"],
       "icon": "assets/icon.icns",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "智能标签生成器-${version}-${arch}.${ext}"
     },
     "win": {
       "target": ["nsis", "portable"],
       "icon": "assets/icon.ico",
-      "artifactName": "${productName} ${version}.${ext}"
+      "artifactName": "智能标签生成器-${version}.${ext}"
     },
     "publish": {
       "provider": "github",
