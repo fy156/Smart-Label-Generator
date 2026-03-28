@@ -60,6 +60,16 @@
     - 未定义时使用 require('./lib/xlsx.full.min.js') 强制挂载到 window.XLSX
     - 确保渲染进程代码中 XLSX 全局可用
   
+  [修复8] 主进程处理 Excel（方案B）- 2026-03-28
+  问题: Mac DMG 打包后路径问题导致 XLSX 加载失败
+  根因: Electron 打包后 require('./lib/') 路径解析失败
+  修复:
+    - 安装 xlsx npm 包到主进程
+    - 添加 IPC: 'open-file'（主进程解析 Excel 返回 JSON）
+    - 添加 IPC: 'export-excel'（主进程生成 Excel 文件）
+    - 渲染进程不再直接调用 XLSX，全部通过 IPC 与主进程通信
+    - 浏览器环境保持原有 XLSX 调用方式
+  
   ================================================================================
   -->
   <!-- XLSX 库本地离线化，避免打包后网络加载失败 -->
@@ -1807,13 +1817,8 @@
       updateStats();
     }
 
-    // 解析 Excel 数据（通用函数）
-    function parseExcelData(dataArray) {
-      const data = new Uint8Array(dataArray);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
+    // 验证并转换 Excel JSON 数据
+    function validateAndConvertExcelData(jsonData) {
       if (jsonData.length === 0) {
         showToast('Excel 文件为空');
         return null;
@@ -1834,9 +1839,18 @@
       return newTags;
     }
 
+    // 解析 Excel 数据（浏览器环境使用）
+    function parseExcelData(dataArray) {
+      const data = new Uint8Array(dataArray);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+      return validateAndConvertExcelData(jsonData);
+    }
+
     // 导入 Excel 主函数（Electron/浏览器自动适配）
     async function importExcel() {
-      // Electron 环境使用 IPC
+      // Electron 环境使用 IPC（主进程处理 XLSX）
       if (window.require) {
         try {
           const { ipcRenderer } = window.require('electron');
@@ -1844,13 +1858,16 @@
             filters: [{ name: 'Excel 文件', extensions: ['xlsx', 'xls'] }]
           });
           if (result.success) {
-            const newTags = parseExcelData(result.data);
+            // 主进程已返回解析后的 JSON 数据
+            const newTags = validateAndConvertExcelData(result.data);
             if (newTags) {
               tags = newTags;
               currentSampleType = '';
               renderTags();
               showToast(`成功导入 ${tags.length} 个标签`);
             }
+          } else if (result.error) {
+            showToast('导入失败: ' + result.error);
           }
         } catch (err) {
           showToast('导入失败: ' + err.message);
@@ -1918,10 +1935,6 @@
         '类型': tag.类型
       }));
       
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '标签数据');
-      
       const typeNames = {
         traffic: '交通设施',
         admin: '行政区',
@@ -1935,23 +1948,26 @@
         ? `示例数据_${typeNames[currentSampleType] || currentSampleType}.xlsx`
         : '标签数据.xlsx';
       
-      // Electron 环境使用 IPC，浏览器环境使用原方法
+      // Electron 环境使用 IPC（主进程处理 XLSX），浏览器环境使用原方法
       if (window.require) {
         try {
           const { ipcRenderer } = window.require('electron');
-          const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-          const result = await ipcRenderer.invoke('save-file', {
-            data: data,
-            fileName: fileName,
-            filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+          const result = await ipcRenderer.invoke('export-excel', {
+            data: exportData,
+            fileName: fileName
           });
           if (result.success) {
             showToast('示例数据导出成功');
+          } else if (result.error) {
+            showToast('导出失败: ' + result.error, 3000);
           }
         } catch (err) {
           showToast('导出失败: ' + err.message, 3000);
         }
       } else {
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '标签数据');
         XLSX.writeFile(wb, fileName);
         showToast('示例数据导出成功');
       }
@@ -1970,27 +1986,27 @@
         { 标签名称: '示例标签2', 类型: '高速公路' },
         { 标签名称: '示例标签3', 类型: '医院' },
       ];
-      const ws = XLSX.utils.json_to_sheet(templateData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '标签模板');
       
-      // Electron 环境使用 IPC，浏览器环境使用原方法
+      // Electron 环境使用 IPC（主进程处理 XLSX），浏览器环境使用原方法
       if (window.require) {
         try {
           const { ipcRenderer } = window.require('electron');
-          const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-          const result = await ipcRenderer.invoke('save-file', {
-            data: data,
-            fileName: '标签导入模板.xlsx',
-            filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+          const result = await ipcRenderer.invoke('export-excel', {
+            data: templateData,
+            fileName: '标签导入模板.xlsx'
           });
           if (result.success) {
             showToast('模板下载成功');
+          } else if (result.error) {
+            showToast('下载失败: ' + result.error, 3000);
           }
         } catch (err) {
           showToast('下载失败: ' + err.message, 3000);
         }
       } else {
+        const ws = XLSX.utils.json_to_sheet(templateData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '标签模板');
         XLSX.writeFile(wb, '标签导入模板.xlsx');
         showToast('模板下载成功');
       }

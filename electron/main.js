@@ -1,6 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const XLSX = require('xlsx');
 
 let mainWindow;
 
@@ -72,12 +73,41 @@ ipcMain.handle('open-file', async (event, { filters }) => {
 
   if (!result.canceled && result.filePaths.length > 0) {
     const filePath = result.filePaths[0];
-    const data = fs.readFileSync(filePath);
-    return { 
-      success: true, 
-      filePath: filePath,
-      data: Array.from(new Uint8Array(data))  // 转为数组方便 IPC 传输
-    };
+    try {
+      // 在主进程中解析 Excel
+      const workbook = XLSX.readFile(filePath);
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+      
+      return { 
+        success: true, 
+        filePath: filePath,
+        data: jsonData  // 直接返回解析后的 JSON 数据
+      };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+  return { success: false };
+});
+
+// 处理 Excel 导出
+ipcMain.handle('export-excel', async (event, { data, fileName }) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: fileName,
+    filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+  });
+
+  if (!result.canceled && result.filePath) {
+    try {
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '标签数据');
+      XLSX.writeFile(wb, result.filePath);
+      return { success: true, filePath: result.filePath };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
   return { success: false };
 });

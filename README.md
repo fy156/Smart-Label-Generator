@@ -110,6 +110,16 @@ npm run build:all
   - 未定义时使用 `require('./lib/xlsx.full.min.js')` 强制挂载到 `window.XLSX`
   - 确保渲染进程代码中 XLSX 全局可用
 
+#### 修复8：主进程处理 Excel（方案B）- 2026-03-28
+- **问题**: Mac DMG 打包后路径问题导致 XLSX 加载失败
+- **根因**: Electron 打包后 `require('./lib/')` 路径解析失败
+- **修复措施**:
+  - 安装 `xlsx` npm 包到主进程
+  - 添加 IPC: `open-file`（主进程解析 Excel 返回 JSON）
+  - 添加 IPC: `export-excel`（主进程生成 Excel 文件）
+  - 渲染进程不再直接调用 XLSX，全部通过 IPC 与主进程通信
+  - 浏览器环境保持原有 XLSX 调用方式
+
 ## 许可证
 
 MIT License
