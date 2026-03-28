@@ -38,9 +38,24 @@
     - Electron环境使用 XLSX.write() + IPC
     - 浏览器环境保持 XLSX.writeFile()
   
+  [修复5] XLSX 库本地离线化 - 2026-03-28
+  问题: GitHub Actions 打包后 XLSX 库加载失败 (CDN 网络问题)
+  修复:
+    - 下载 xlsx.full.min.js 到 src/lib/ 目录
+    - 修改引用路径为本地路径 lib/xlsx.full.min.js
+    - 避免打包后网络加载失败问题
+  
+  [修复6] 批量导出图片（PNG/JPG/BMP/TGA）- 2026-03-28
+  问题: 打包后批量导出图片失败 (link.click() 被阻止)
+  修复:
+    - 添加 Electron IPC 支持 (save-file)
+    - 将 Blob 转为 ArrayBuffer 再转为数组传输
+    - 浏览器环境保持原有 link.click() 方式
+  
   ================================================================================
   -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- XLSX 库本地离线化，避免打包后网络加载失败 -->
+  <script src="lib/xlsx.full.min.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -2576,16 +2591,35 @@
             default: blob = canvasToTGA(canvas);
           }
 
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${tag.标签名称}_标签.${format}`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+          // Electron 环境使用 IPC 保存文件
+          if (window.require) {
+            try {
+              const { ipcRenderer } = window.require('electron');
+              const arrayBuffer = await blob.arrayBuffer();
+              const result = await ipcRenderer.invoke('save-file', {
+                data: Array.from(new Uint8Array(arrayBuffer)),
+                fileName: `${tag.标签名称}_标签.${format}`,
+                filters: [{ name: format.toUpperCase(), extensions: [format] }]
+              });
+              if (result.success) {
+                successCount++;
+              }
+            } catch (err) {
+              console.error(`导出标签 ${tag.标签名称} 失败:`, err);
+            }
+          } else {
+            // 浏览器环境使用下载链接
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${tag.标签名称}_标签.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            successCount++;
+          }
 
-          successCount++;
           await new Promise(resolve => setTimeout(resolve, 300));
         } catch (error) {
           console.error(`导出标签 ${tag.标签名称} 失败:`, error);

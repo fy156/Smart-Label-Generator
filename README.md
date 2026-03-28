@@ -88,6 +88,20 @@ npm run build:all
   - Electron环境使用 `XLSX.write()` + IPC
   - 浏览器环境保持 `XLSX.writeFile()`
 
+#### 修复5：XLSX 库本地离线化 - 2026-03-28
+- **问题**: GitHub Actions 打包后 XLSX 库加载失败 (CDN 网络问题)
+- **修复措施**:
+  - 下载 `xlsx.full.min.js` 到 `src/lib/` 目录
+  - 修改引用路径为本地路径 `lib/xlsx.full.min.js`
+  - 避免打包后网络加载失败问题
+
+#### 修复6：批量导出图片（PNG/JPG/BMP/TGA）- 2026-03-28
+- **问题**: 打包后批量导出图片失败 (`link.click()` 被阻止)
+- **修复措施**:
+  - 添加 Electron IPC 支持 (`save-file`)
+  - 将 Blob 转为 ArrayBuffer 再转为数组传输
+  - 浏览器环境保持原有 `link.click()` 方式
+
 ## 许可证
 
 MIT License
