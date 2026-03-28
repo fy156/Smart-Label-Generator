@@ -1,71 +1,50 @@
 {
   "name": "smart-label-generator",
   "version": "1.0.0",
-  "description": "智能标签生成器 - UE/CIM数字孪生标签制作工具",
-  "main": "electron/main.js",
-  "author": "fy156",
-  "license": "MIT",
+  "description": "智能标签生成器 - 支持Excel导入和BMP导出",
+  "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "npm run build:win && npm run build:mac",
-    "build:win": "electron-builder --win --x64",
     "build:mac": "electron-builder --mac --x64 --arm64",
-    "build:all": "electron-builder --win --mac",
-    "postinstall": "electron-builder install-app-deps"
+    "build:win": "electron-builder --win --x64",
+    "build": "npm run build:mac && npm run build:win"
   },
   "build": {
-    "appId": "com.fy156.smart-label-generator",
+    "appId": "com.yourcompany.smart-label-generator",
     "productName": "智能标签生成器",
+    "artifactName": "${productName}-${version}.${ext}",
     "directories": {
       "output": "release"
     },
     "files": [
-      "src/**/*",
-      "electron/**/*",
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
       "assets/**/*",
-      "package.json"
+      "node_modules/**/*"
     ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        },
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "assets/icon.ico"
-    },
     "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        },
-        {
-          "target": "zip",
-          "arch": ["x64", "arm64"]
-        }
-      ],
+      "target": ["dmg", "zip"],
       "icon": "assets/icon.icns",
-      "category": "public.app-category.utilities"
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "智能标签生成器"
+    "win": {
+      "target": ["nsis", "portable"],
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName} ${version}.${ext}"
     },
-    "dmg": {
-      "title": "智能标签生成器",
-      "icon": "assets/icon.icns"
+    "publish": {
+      "provider": "github",
+      "owner": "fy156",
+      "repo": "Smart-Label-Generator"
     }
   },
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.0.0"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5",
+    "html2canvas": "^1.4.1"
   }
 }
