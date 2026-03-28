@@ -1,26 +1,67 @@
 {
-  "name": "Smart-Label-Generator",
-  "version": "1.0.2",
-  "description": "智能标签生成器",
-  "main": "main.js",
+  "name": "smart-label-generator",
+  "version": "1.0.0",
+  "description": "智能标签生成器 - UE/CIM数字孪生标签制作工具",
+  "main": "electron/main.js",
+  "author": "fy156",
+  "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win --x64"
+    "build": "npm run build:win && npm run build:mac",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --x64 --arm64",
+    "build:all": "electron-builder --win --mac",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "com.fy156.smart-label-generator",
     "productName": "智能标签生成器",
     "directories": {
-      "output": "dist"
+      "output": "release"
     },
     "files": [
-      "main.js",
-      "package.json",
-      "app/dist/**/*",
-      "tag-generator/**/*"
+      "src/**/*",
+      "electron/**/*",
+      "assets/**/*",
+      "package.json"
     ],
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.utilities"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "智能标签生成器"
+    },
+    "dmg": {
+      "title": "智能标签生成器",
+      "icon": "assets/icon.icns"
     }
   },
   "devDependencies": {
