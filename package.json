@@ -2,7 +2,8 @@
   "name": "smart-label-generator",
   "version": "1.0.0",
   "description": "智能标签生成器 - 支持Excel导入和BMP导出",
-  "main": "main.js",
+  "main": "electron/main.js",
+  "author": "fy156",
   "scripts": {
     "start": "electron .",
     "build:mac": "electron-builder --mac --x64 --arm64",
@@ -17,9 +18,8 @@
       "output": "release"
     },
     "files": [
-      "main.js",
-      "preload.js",
-      "renderer/**/*",
+      "electron/**/*",
+      "src/**/*",
       "assets/**/*",
       "node_modules/**/*"
     ],
