@@ -1735,45 +1735,82 @@
       updateStats();
     }
 
-    document.getElementById('fileInput').addEventListener('change', function(e) {
+    // 解析 Excel 数据（通用函数）
+    function parseExcelData(dataArray) {
+      const data = new Uint8Array(dataArray);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+      if (jsonData.length === 0) {
+        showToast('Excel 文件为空');
+        return null;
+      }
+
+      const firstRow = jsonData[0];
+      if (!('标签名称' in firstRow) || !('类型' in firstRow)) {
+        showToast('Excel 格式错误：需要包含「标签名称」和「类型」列');
+        return null;
+      }
+
+      const newTags = jsonData.map((row, index) => ({
+        标签名称: String(row['标签名称'] || ''),
+        类型: String(row['类型'] || ''),
+        id: `${Date.now()}-${index}`,
+      })).filter(tag => tag.标签名称 && tag.类型);
+
+      return newTags;
+    }
+
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
+      // Electron 环境使用 IPC
+      if (window.require) {
         try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-          if (jsonData.length === 0) {
-            showToast('Excel 文件为空');
-            return;
+          const { ipcRenderer } = window.require('electron');
+          const result = await ipcRenderer.invoke('open-file', {
+            filters: [{ name: 'Excel 文件', extensions: ['xlsx', 'xls'] }]
+          });
+          if (result.success) {
+            const newTags = parseExcelData(result.data);
+            if (newTags) {
+              tags = newTags;
+              currentSampleType = '';
+              renderTags();
+              showToast(`成功导入 ${tags.length} 个标签`);
+            }
           }
+        } catch (err) {
+          showToast('导入失败: ' + err.message);
+        }
+        this.value = '';
+        return;
+      }
 
-          const firstRow = jsonData[0];
-          if (!('标签名称' in firstRow) || !('类型' in firstRow)) {
-            showToast('Excel 格式错误：需要包含「标签名称」和「类型」列');
-            return;
+      // 浏览器环境使用 FileReader
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const newTags = parseExcelData(e.target.result);
+          if (newTags) {
+            tags = newTags;
+            currentSampleType = '';
+            renderTags();
+            showToast(`成功导入 ${tags.length} 个标签`);
           }
-
-          tags = jsonData.map((row, index) => ({
-            标签名称: String(row['标签名称'] || ''),
-            类型: String(row['类型'] || ''),
-            id: `${Date.now()}-${index}`,
-          })).filter(tag => tag.标签名称 && tag.类型);
-
-          currentSampleType = '';
-          renderTags();
-          showToast(`成功导入 ${tags.length} 个标签`);
         } catch (error) {
           showToast('文件解析失败，请检查文件格式');
           console.error(error);
         }
+        this.value = '';
+      };
+      reader.onerror = () => {
+        showToast('读取文件失败');
+        this.value = '';
       };
       reader.readAsArrayBuffer(file);
-      this.value = '';
     });
 
     function loadSampleData(type) {
@@ -1792,7 +1829,7 @@
       showToast(`已加载${typeNames[type]}示例数据`);
     }
 
-    function exportSampleData() {
+    async function exportSampleData() {
       if (tags.length === 0) {
         showToast('没有可导出的示例数据');
         return;
@@ -1820,8 +1857,26 @@
         ? `示例数据_${typeNames[currentSampleType] || currentSampleType}.xlsx`
         : '标签数据.xlsx';
       
-      XLSX.writeFile(wb, fileName);
-      showToast('示例数据导出成功');
+      // Electron 环境使用 IPC，浏览器环境使用原方法
+      if (window.require) {
+        try {
+          const { ipcRenderer } = window.require('electron');
+          const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const result = await ipcRenderer.invoke('save-file', {
+            data: data,
+            fileName: fileName,
+            filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+          });
+          if (result.success) {
+            showToast('示例数据导出成功');
+          }
+        } catch (err) {
+          showToast('导出失败: ' + err.message, 3000);
+        }
+      } else {
+        XLSX.writeFile(wb, fileName);
+        showToast('示例数据导出成功');
+      }
     }
 
     function clearData() {
@@ -1831,7 +1886,7 @@
       showToast('已清空所有标签');
     }
 
-    function downloadTemplate() {
+    async function downloadTemplate() {
       const templateData = [
         { 标签名称: '示例标签1', 类型: '机场' },
         { 标签名称: '示例标签2', 类型: '高速公路' },
@@ -1840,8 +1895,27 @@
       const ws = XLSX.utils.json_to_sheet(templateData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, '标签模板');
-      XLSX.writeFile(wb, '标签导入模板.xlsx');
-      showToast('模板下载成功');
+      
+      // Electron 环境使用 IPC，浏览器环境使用原方法
+      if (window.require) {
+        try {
+          const { ipcRenderer } = window.require('electron');
+          const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+          const result = await ipcRenderer.invoke('save-file', {
+            data: data,
+            fileName: '标签导入模板.xlsx',
+            filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+          });
+          if (result.success) {
+            showToast('模板下载成功');
+          }
+        } catch (err) {
+          showToast('下载失败: ' + err.message, 3000);
+        }
+      } else {
+        XLSX.writeFile(wb, '标签导入模板.xlsx');
+        showToast('模板下载成功');
+      }
     }
 
     async function canvasToPNG(canvas) {

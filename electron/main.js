@@ -47,7 +47,7 @@ app.on('window-all-closed', () => {
   }
 });
 
-// 处理文件保存
+// 处理文件保存（支持 Buffer/Array）
 ipcMain.handle('save-file', async (event, { data, fileName, filters }) => {
   const result = await dialog.showSaveDialog(mainWindow, {
     defaultPath: fileName,
@@ -55,8 +55,29 @@ ipcMain.handle('save-file', async (event, { data, fileName, filters }) => {
   });
 
   if (!result.canceled && result.filePath) {
-    fs.writeFileSync(result.filePath, data);
+    // 支持 Array/Uint8Array/ArrayBuffer
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(result.filePath, buffer);
     return { success: true, filePath: result.filePath };
+  }
+  return { success: false };
+});
+
+// 处理文件打开（Excel导入）
+ipcMain.handle('open-file', async (event, { filters }) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    filters: filters || [{ name: 'All Files', extensions: ['*'] }],
+    properties: ['openFile']
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0];
+    const data = fs.readFileSync(filePath);
+    return { 
+      success: true, 
+      filePath: filePath,
+      data: Array.from(new Uint8Array(data))  // 转为数组方便 IPC 传输
+    };
   }
   return { success: false };
 });
