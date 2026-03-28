@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高德风格综合图例库（完整版）v3.1</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .standard-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .category {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .category:hover {
+            transform: translateY(-5px);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+        }
+
+        .category-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            color: white;
+        }
+
+        .category-title {
+            flex: 1;
+        }
+
+        .category-title h2 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .category-title span {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .icon-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .icon-card:hover {
+            background: white;
+            border-color: #4A90E2;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.2);
+            transform: scale(1.05);
+        }
+
+        .icon-display {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .icon-card:hover .icon-display {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .icon-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .icon-id {
+            font-size: 0.7em;
+            color: #999;
+            font-family: monospace;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .icon-meta {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-left: 8px;
+        }
+
+        .badge-new {
+            background: #E74C3C;
+            color: white;
+        }
+
+        .badge-standard {
+            background: #27AE60;
+            color: white;
+        }
+
+        .badge-core {
+            background: #4A90E2;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .copy-btn {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.75em;
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .icon-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: #357ABD;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #1976D2;
+        }
+
+        .toc {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        .toc h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item:hover {
+            background: #e3f2fd;
+        }
+
+        .toc-number {
+            width: 30px;
+            height: 30px;
+            background: #4A90E2;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .toc-info {
+            flex: 1;
+        }
+
+        .toc-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .toc-count {
+            font-size: 0.8em;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗺️ 高德风格综合图例库</h1>
+            <p class="subtitle">完整版 v3.1 | 16大分类 | 134个图标</p>
+            <div class="standard-badge">GB/T 20257-2017 地形图标准 + 高德风格</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">16</div>
+                    <div>分类</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">134</div>
+                    <div>图标</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">16</div>
+                    <div>配色</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="toc">
+            <h2>📑 分类目录</h2>
+            <div class="toc-list">
+
+                <div class="toc-item" onclick="document.getElementById('cat-catering_basic').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">1</div>
+                    <div class="toc-info">
+                        <div class="toc-name">餐饮美食 <span class="badge badge-core">CORE</span></div>
+                        <div class="toc-count">5 个图标 · #FF7F00</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-catering_detailed').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">2</div>
+                    <div class="toc-info">
+                        <div class="toc-name">餐饮美食（细分） <span class="badge badge-new">NEW</span></div>
+                        <div class="toc-count">12 个图标 · #FF7F00</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-transport').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">3</div>
+                    <div class="toc-info">
+                        <div class="toc-name">交通出行 <span class="badge badge-core">CORE</span></div>
+                        <div class="toc-count">7 个图标 · #2ECC71</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-road_topo').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">4</div>
+                    <div class="toc-info">
+                        <div class="toc-name">道路（地形图标准） <span class="badge badge-new">NEW</span></div>
+                        <div class="toc-count">12 个图标 · #CD5C5C</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-accommodation').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">5</div>
+                    <div class="toc-info">
+                        <div class="toc-name">住宿服务 <span class="badge badge-core">CORE</span></div>
+                        <div class="toc-count">3 个图标 · #4A90E2</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-tourism').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">6</div>
+                    <div class="toc-info">
+                        <div class="toc-name">旅游景点 </div>
+                        <div class="toc-count">6 个图标 · #1ABC9C</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-shopping').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">7</div>
+                    <div class="toc-info">
+                        <div class="toc-name">购物消费 </div>
+                        <div class="toc-count">4 个图标 · #9B59B6</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-hospital').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">8</div>
+                    <div class="toc-info">
+                        <div class="toc-name">医疗卫生 <span class="badge badge-new">NEW</span></div>
+                        <div class="toc-count">10 个图标 · #E74C3C</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-school').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">9</div>
+                    <div class="toc-info">
+                        <div class="toc-name">教育机构 <span class="badge badge-new">NEW</span></div>
+                        <div class="toc-count">10 个图标 · #32CD32</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-factory').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">10</div>
+                    <div class="toc-info">
+                        <div class="toc-name">工业设施 <span class="badge badge-new">NEW</span></div>
+                        <div class="toc-count">12 个图标 · #4682B4</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-service').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">11</div>
+                    <div class="toc-info">
+                        <div class="toc-name">公共服务 </div>
+                        <div class="toc-count">6 个图标 · #4A90E2</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-entertainment').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">12</div>
+                    <div class="toc-info">
+                        <div class="toc-name">休闲娱乐 </div>
+                        <div class="toc-count">4 个图标 · #E74C3C</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-marker').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">13</div>
+                    <div class="toc-info">
+                        <div class="toc-name">地图标记 </div>
+                        <div class="toc-count">5 个图标 · #F1C40F</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-administrative').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">14</div>
+                    <div class="toc-info">
+                        <div class="toc-name">行政区划 </div>
+                        <div class="toc-count">11 个图标 · #E91E63</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-infrastructure').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">15</div>
+                    <div class="toc-info">
+                        <div class="toc-name">基础设施 </div>
+                        <div class="toc-count">15 个图标 · #607D8B</div>
+                    </div>
+                </div>
+    
+                <div class="toc-item" onclick="document.getElementById('cat-water_system').scrollIntoView({behavior: 'smooth'})">
+                    <div class="toc-number">16</div>
+                    <div class="toc-info">
+                        <div class="toc-name">水系水利 </div>
+                        <div class="toc-count">12 个图标 · #008B8B</div>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+
+        <div class="category" id="cat-catering_basic">
+            <div class="category-header" style="border-color: #FF7F00">
+                <div class="category-icon" style="background: #FF7F00">
+                    🍴
+                </div>
+                <div class="category-title">
+                    <h2>餐饮美食 <span class="badge badge-core">CORE</span></h2>
+                    <span>5 个图标 · #FF7F00 · 基础餐饮分类</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('restaurant')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍴
+                    </div>
+                    <div class="icon-name">餐厅</div>
+                    <div class="icon-id">restaurant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('cafe')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        ☕
+                    </div>
+                    <div class="icon-name">咖啡厅</div>
+                    <div class="icon-id">cafe</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('fastfood')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍔
+                    </div>
+                    <div class="icon-name">快餐</div>
+                    <div class="icon-id">fastfood</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('bar')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍸
+                    </div>
+                    <div class="icon-name">酒吧</div>
+                    <div class="icon-id">bar</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('bbq')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍖
+                    </div>
+                    <div class="icon-name">烧烤</div>
+                    <div class="icon-id">bbq</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-catering_detailed">
+            <div class="category-header" style="border-color: #FF7F00">
+                <div class="category-icon" style="background: #FF7F00">
+                    🥢
+                </div>
+                <div class="category-title">
+                    <h2>餐饮美食（细分） <span class="badge badge-new">NEW</span></h2>
+                    <span>12 个图标 · #FF7F00 · 详细餐饮分类</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('chinese_restaurant')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🥢
+                    </div>
+                    <div class="icon-name">中餐厅</div>
+                    <div class="icon-id">chinese_restaurant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('western_restaurant')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍽️
+                    </div>
+                    <div class="icon-name">西餐厅</div>
+                    <div class="icon-id">western_restaurant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('hotpot')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍲
+                    </div>
+                    <div class="icon-name">火锅店</div>
+                    <div class="icon-id">hotpot</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('bbq_shop')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🔥
+                    </div>
+                    <div class="icon-name">烧烤店</div>
+                    <div class="icon-id">bbq_shop</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('fast_food_shop')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍟
+                    </div>
+                    <div class="icon-name">快餐店</div>
+                    <div class="icon-id">fast_food_shop</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('cafe_shop')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        ☕
+                    </div>
+                    <div class="icon-name">咖啡厅</div>
+                    <div class="icon-id">cafe_shop</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('tea_house')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍵
+                    </div>
+                    <div class="icon-name">茶馆</div>
+                    <div class="icon-id">tea_house</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('bar_shop')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍺
+                    </div>
+                    <div class="icon-name">酒吧</div>
+                    <div class="icon-id">bar_shop</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('bakery')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🥐
+                    </div>
+                    <div class="icon-name">面包店</div>
+                    <div class="icon-id">bakery</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('dessert_shop')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍰
+                    </div>
+                    <div class="icon-name">甜品店</div>
+                    <div class="icon-id">dessert_shop</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('night_market')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🥡
+                    </div>
+                    <div class="icon-name">夜市/小吃街</div>
+                    <div class="icon-id">night_market</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('food_court')">
+                    <div class="icon-display" style="background: #FF7F0020; color: #FF7F00">
+                        🍱
+                    </div>
+                    <div class="icon-name">美食广场</div>
+                    <div class="icon-id">food_court</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-transport">
+            <div class="category-header" style="border-color: #2ECC71">
+                <div class="category-icon" style="background: #2ECC71">
+                    🚌
+                </div>
+                <div class="category-title">
+                    <h2>交通出行 <span class="badge badge-core">CORE</span></h2>
+                    <span>7 个图标 · #2ECC71 · 公共交通与出行设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('bus')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        🚌
+                    </div>
+                    <div class="icon-name">公交站</div>
+                    <div class="icon-id">bus</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('subway')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        🚇
+                    </div>
+                    <div class="icon-name">地铁站</div>
+                    <div class="icon-id">subway</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('train')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        🚂
+                    </div>
+                    <div class="icon-name">火车站</div>
+                    <div class="icon-id">train</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('airport')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        ✈️
+                    </div>
+                    <div class="icon-name">机场</div>
+                    <div class="icon-id">airport</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('parking')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        P
+                    </div>
+                    <div class="icon-name">停车场</div>
+                    <div class="icon-id">parking</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('gas')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        ⛽
+                    </div>
+                    <div class="icon-name">加油站</div>
+                    <div class="icon-id">gas</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('ev_charging')">
+                    <div class="icon-display" style="background: #2ECC7120; color: #2ECC71">
+                        🔌
+                    </div>
+                    <div class="icon-name">充电桩</div>
+                    <div class="icon-id">ev_charging</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-road_topo">
+            <div class="category-header" style="border-color: #CD5C5C">
+                <div class="category-icon" style="background: #CD5C5C">
+                    高速
+                </div>
+                <div class="category-title">
+                    <h2>道路（地形图标准） <span class="badge badge-standard">GB/T 20257</span></h2>
+                    <span>12 个图标 · #CD5C5C · GB/T 20257-2017 国家基本比例尺地图图式</span>
+                </div>
+            </div>
+    
+            <div class="note">
+                <strong>地形图道路标准说明：</strong>大车路（能通行汽车的道路）用红色实线表示；小路（不能通行汽车）用灰色实线；时令路用虚线表示；建筑中路用点划线表示。符合GB/T 20257-2017《国家基本比例尺地图图式》标准。
+            </div>
+        
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('highway_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        高速
+                    </div>
+                    <div class="icon-name">高速公路</div>
+                    <div class="icon-id">highway_topo</div>
+                    <div class="icon-meta">线宽5px · z5+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('national_road_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        G
+                    </div>
+                    <div class="icon-name">国道</div>
+                    <div class="icon-id">national_road_topo</div>
+                    <div class="icon-meta">线宽4px · z6+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('provincial_road_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        S
+                    </div>
+                    <div class="icon-name">省道</div>
+                    <div class="icon-id">provincial_road_topo</div>
+                    <div class="icon-meta">线宽3.5px · z7+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('county_road_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        X
+                    </div>
+                    <div class="icon-name">县道</div>
+                    <div class="icon-id">county_road_topo</div>
+                    <div class="icon-meta">线宽3px · z8+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('major_road')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        大车路
+                    </div>
+                    <div class="icon-name">大车路</div>
+                    <div class="icon-id">major_road</div>
+                    <div class="icon-meta">线宽3px · z9+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('minor_road')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        小路
+                    </div>
+                    <div class="icon-name">乡村路/小路</div>
+                    <div class="icon-id">minor_road</div>
+                    <div class="icon-meta">线宽2px · z11+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('footpath')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        人
+                    </div>
+                    <div class="icon-name">人行小路</div>
+                    <div class="icon-id">footpath</div>
+                    <div class="icon-meta">线宽1.5px · z13+ · 虚线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('seasonal_road')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        时令
+                    </div>
+                    <div class="icon-name">时令路</div>
+                    <div class="icon-id">seasonal_road</div>
+                    <div class="icon-meta">线宽2px · z12+ · 虚线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('under_construction')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        施
+                    </div>
+                    <div class="icon-name">建筑中路</div>
+                    <div class="icon-id">under_construction</div>
+                    <div class="icon-meta">线宽3px · z10+ · 点划线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('railway_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        铁
+                    </div>
+                    <div class="icon-name">标准轨铁路</div>
+                    <div class="icon-id">railway_topo</div>
+                    <div class="icon-meta">线宽3px · z6+ · 花线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('narrow_railway')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        窄轨
+                    </div>
+                    <div class="icon-name">窄轨铁路</div>
+                    <div class="icon-id">narrow_railway</div>
+                    <div class="icon-meta">线宽2.5px · z8+ · narrow_rail</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('subway_topo')">
+                    <div class="icon-display" style="background: #CD5C5C20; color: #CD5C5C">
+                        地铁
+                    </div>
+                    <div class="icon-name">地铁/轻轨</div>
+                    <div class="icon-id">subway_topo</div>
+                    <div class="icon-meta">线宽3px · z9+ · 实线</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-accommodation">
+            <div class="category-header" style="border-color: #4A90E2">
+                <div class="category-icon" style="background: #4A90E2">
+                    🏨
+                </div>
+                <div class="category-title">
+                    <h2>住宿服务 <span class="badge badge-core">CORE</span></h2>
+                    <span>3 个图标 · #4A90E2 · 酒店旅馆等住宿设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('hotel')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        🏨
+                    </div>
+                    <div class="icon-name">酒店</div>
+                    <div class="icon-id">hotel</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('hostel')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        🛏️
+                    </div>
+                    <div class="icon-name">旅馆</div>
+                    <div class="icon-id">hostel</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('campsite')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        ⛺
+                    </div>
+                    <div class="icon-name">露营地</div>
+                    <div class="icon-id">campsite</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-tourism">
+            <div class="category-header" style="border-color: #1ABC9C">
+                <div class="category-icon" style="background: #1ABC9C">
+                    ⛰️
+                </div>
+                <div class="category-title">
+                    <h2>旅游景点 </h2>
+                    <span>6 个图标 · #1ABC9C · 旅游景区与景点</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('scenic')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        ⛰️
+                    </div>
+                    <div class="icon-name">风景区</div>
+                    <div class="icon-id">scenic</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('park')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        🌳
+                    </div>
+                    <div class="icon-name">公园</div>
+                    <div class="icon-id">park</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('beach')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        🏖️
+                    </div>
+                    <div class="icon-name">海滩</div>
+                    <div class="icon-id">beach</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('museum')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        🏛️
+                    </div>
+                    <div class="icon-name">博物馆</div>
+                    <div class="icon-id">museum</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('temple')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        ⛩️
+                    </div>
+                    <div class="icon-name">寺庙</div>
+                    <div class="icon-id">temple</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('viewpoint')">
+                    <div class="icon-display" style="background: #1ABC9C20; color: #1ABC9C">
+                        🔭
+                    </div>
+                    <div class="icon-name">观景台</div>
+                    <div class="icon-id">viewpoint</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-shopping">
+            <div class="category-header" style="border-color: #9B59B6">
+                <div class="category-icon" style="background: #9B59B6">
+                    🛍️
+                </div>
+                <div class="category-title">
+                    <h2>购物消费 </h2>
+                    <span>4 个图标 · #9B59B6 · 商场超市等购物场所</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('mall')">
+                    <div class="icon-display" style="background: #9B59B620; color: #9B59B6">
+                        🛍️
+                    </div>
+                    <div class="icon-name">购物中心</div>
+                    <div class="icon-id">mall</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('supermarket')">
+                    <div class="icon-display" style="background: #9B59B620; color: #9B59B6">
+                        🛒
+                    </div>
+                    <div class="icon-name">超市</div>
+                    <div class="icon-id">supermarket</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('convenience')">
+                    <div class="icon-display" style="background: #9B59B620; color: #9B59B6">
+                        🏪
+                    </div>
+                    <div class="icon-name">便利店</div>
+                    <div class="icon-id">convenience</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('market')">
+                    <div class="icon-display" style="background: #9B59B620; color: #9B59B6">
+                        🥬
+                    </div>
+                    <div class="icon-name">菜市场</div>
+                    <div class="icon-id">market</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-hospital">
+            <div class="category-header" style="border-color: #E74C3C">
+                <div class="category-icon" style="background: #E74C3C">
+                    🏥
+                </div>
+                <div class="category-title">
+                    <h2>医疗卫生 <span class="badge badge-new">NEW</span></h2>
+                    <span>10 个图标 · #E74C3C · 医疗机构与卫生设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('general_hospital')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🏥
+                    </div>
+                    <div class="icon-name">综合医院</div>
+                    <div class="icon-id">general_hospital</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('specialized_hospital')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        专
+                    </div>
+                    <div class="icon-name">专科医院</div>
+                    <div class="icon-id">specialized_hospital</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('clinic')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        诊
+                    </div>
+                    <div class="icon-name">诊所</div>
+                    <div class="icon-id">clinic</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('emergency_center')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🚑
+                    </div>
+                    <div class="icon-name">急救中心</div>
+                    <div class="icon-id">emergency_center</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('pharmacy')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        💊
+                    </div>
+                    <div class="icon-name">药店</div>
+                    <div class="icon-id">pharmacy</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('health_center')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        社
+                    </div>
+                    <div class="icon-name">社区卫生服务中心</div>
+                    <div class="icon-id">health_center</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('cdc')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        CDC
+                    </div>
+                    <div class="icon-name">疾控中心</div>
+                    <div class="icon-id">cdc</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('blood_station')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🩸
+                    </div>
+                    <div class="icon-name">血站</div>
+                    <div class="icon-id">blood_station</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('nursing_home')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        👴
+                    </div>
+                    <div class="icon-name">养老院</div>
+                    <div class="icon-id">nursing_home</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('vet_clinic')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🐕
+                    </div>
+                    <div class="icon-name">宠物医院</div>
+                    <div class="icon-id">vet_clinic</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-school">
+            <div class="category-header" style="border-color: #32CD32">
+                <div class="category-icon" style="background: #32CD32">
+                    🎓
+                </div>
+                <div class="category-title">
+                    <h2>教育机构 <span class="badge badge-new">NEW</span></h2>
+                    <span>10 个图标 · #32CD32 · 各级各类学校及教育机构</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('university')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        🎓
+                    </div>
+                    <div class="icon-name">高等院校</div>
+                    <div class="icon-id">university</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('high_school')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        高
+                    </div>
+                    <div class="icon-name">高中</div>
+                    <div class="icon-id">high_school</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('middle_school')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        中
+                    </div>
+                    <div class="icon-name">初中</div>
+                    <div class="icon-id">middle_school</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('primary_school')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        小
+                    </div>
+                    <div class="icon-name">小学</div>
+                    <div class="icon-id">primary_school</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('kindergarten')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        幼
+                    </div>
+                    <div class="icon-name">幼儿园</div>
+                    <div class="icon-id">kindergarten</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('vocational')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        职
+                    </div>
+                    <div class="icon-name">职业学校</div>
+                    <div class="icon-id">vocational</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('training_center')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        训
+                    </div>
+                    <div class="icon-name">培训机构</div>
+                    <div class="icon-id">training_center</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('research_inst')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        研
+                    </div>
+                    <div class="icon-name">科研院所</div>
+                    <div class="icon-id">research_inst</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('library')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        📚
+                    </div>
+                    <div class="icon-name">图书馆</div>
+                    <div class="icon-id">library</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('museum_edu')">
+                    <div class="icon-display" style="background: #32CD3220; color: #32CD32">
+                        馆
+                    </div>
+                    <div class="icon-name">科技馆/博物馆</div>
+                    <div class="icon-id">museum_edu</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-factory">
+            <div class="category-header" style="border-color: #4682B4">
+                <div class="category-icon" style="background: #4682B4">
+                    🏭
+                </div>
+                <div class="category-title">
+                    <h2>工业设施 <span class="badge badge-new">NEW</span></h2>
+                    <span>12 个图标 · #4682B4 · 工厂、仓库及工业设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('heavy_industry')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        🏭
+                    </div>
+                    <div class="icon-name">重工业</div>
+                    <div class="icon-id">heavy_industry</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('light_industry')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        轻
+                    </div>
+                    <div class="icon-name">轻工业</div>
+                    <div class="icon-id">light_industry</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('electronics')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        💻
+                    </div>
+                    <div class="icon-name">电子厂</div>
+                    <div class="icon-id">electronics</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('textile')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        🧵
+                    </div>
+                    <div class="icon-name">纺织厂</div>
+                    <div class="icon-id">textile</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('food_processing')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        🥫
+                    </div>
+                    <div class="icon-name">食品加工厂</div>
+                    <div class="icon-id">food_processing</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('chemical')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        ⚗️
+                    </div>
+                    <div class="icon-name">化工厂</div>
+                    <div class="icon-id">chemical</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('warehouse')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        📦
+                    </div>
+                    <div class="icon-name">仓库</div>
+                    <div class="icon-id">warehouse</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('logistics')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        🚛
+                    </div>
+                    <div class="icon-name">物流园</div>
+                    <div class="icon-id">logistics</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('power_plant')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        ⚡
+                    </div>
+                    <div class="icon-name">发电厂</div>
+                    <div class="icon-id">power_plant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('water_plant')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        💧
+                    </div>
+                    <div class="icon-name">水厂</div>
+                    <div class="icon-id">water_plant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('sewage_treatment')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        🚰
+                    </div>
+                    <div class="icon-name">污水处理厂</div>
+                    <div class="icon-id">sewage_treatment</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('mining')">
+                    <div class="icon-display" style="background: #4682B420; color: #4682B4">
+                        ⛏️
+                    </div>
+                    <div class="icon-name">矿山</div>
+                    <div class="icon-id">mining</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-service">
+            <div class="category-header" style="border-color: #4A90E2">
+                <div class="category-icon" style="background: #4A90E2">
+                    🏦
+                </div>
+                <div class="category-title">
+                    <h2>公共服务 </h2>
+                    <span>6 个图标 · #4A90E2 · 银行、政务等公共服务</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('bank')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        🏦
+                    </div>
+                    <div class="icon-name">银行</div>
+                    <div class="icon-id">bank</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('atm')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        💳
+                    </div>
+                    <div class="icon-name">ATM</div>
+                    <div class="icon-id">atm</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('police')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        👮
+                    </div>
+                    <div class="icon-name">警察局</div>
+                    <div class="icon-id">police</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('government')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        🏛️
+                    </div>
+                    <div class="icon-name">政府机构</div>
+                    <div class="icon-id">government</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('post_office')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        📮
+                    </div>
+                    <div class="icon-name">邮局</div>
+                    <div class="icon-id">post_office</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('toilet')">
+                    <div class="icon-display" style="background: #4A90E220; color: #4A90E2">
+                        🚻
+                    </div>
+                    <div class="icon-name">厕所</div>
+                    <div class="icon-id">toilet</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-entertainment">
+            <div class="category-header" style="border-color: #E74C3C">
+                <div class="category-icon" style="background: #E74C3C">
+                    🎬
+                </div>
+                <div class="category-title">
+                    <h2>休闲娱乐 </h2>
+                    <span>4 个图标 · #E74C3C · 影院、KTV等娱乐场所</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('cinema')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🎬
+                    </div>
+                    <div class="icon-name">电影院</div>
+                    <div class="icon-id">cinema</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('ktv')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🎤
+                    </div>
+                    <div class="icon-name">KTV</div>
+                    <div class="icon-id">ktv</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('gym')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        💪
+                    </div>
+                    <div class="icon-name">健身房</div>
+                    <div class="icon-id">gym</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('game')">
+                    <div class="icon-display" style="background: #E74C3C20; color: #E74C3C">
+                        🎮
+                    </div>
+                    <div class="icon-name">游戏厅</div>
+                    <div class="icon-id">game</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-marker">
+            <div class="category-header" style="border-color: #F1C40F">
+                <div class="category-icon" style="background: #F1C40F">
+                    📍
+                </div>
+                <div class="category-title">
+                    <h2>地图标记 </h2>
+                    <span>5 个图标 · #F1C40F · 定位、起点终点等标记</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('location')">
+                    <div class="icon-display" style="background: #F1C40F20; color: #F1C40F">
+                        📍
+                    </div>
+                    <div class="icon-name">当前位置</div>
+                    <div class="icon-id">location</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('start')">
+                    <div class="icon-display" style="background: #F1C40F20; color: #F1C40F">
+                        起
+                    </div>
+                    <div class="icon-name">起点</div>
+                    <div class="icon-id">start</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('end')">
+                    <div class="icon-display" style="background: #F1C40F20; color: #F1C40F">
+                        终
+                    </div>
+                    <div class="icon-name">终点</div>
+                    <div class="icon-id">end</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('favorite')">
+                    <div class="icon-display" style="background: #F1C40F20; color: #F1C40F">
+                        ⭐
+                    </div>
+                    <div class="icon-name">收藏</div>
+                    <div class="icon-id">favorite</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('warning')">
+                    <div class="icon-display" style="background: #F1C40F20; color: #F1C40F">
+                        ⚠️
+                    </div>
+                    <div class="icon-name">警告</div>
+                    <div class="icon-id">warning</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-administrative">
+            <div class="category-header" style="border-color: #E91E63">
+                <div class="category-icon" style="background: #E91E63">
+                    省
+                </div>
+                <div class="category-title">
+                    <h2>行政区划 </h2>
+                    <span>11 个图标 · #E91E63 · 行政边界与区域划分</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('province')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        省
+                    </div>
+                    <div class="icon-name">省级行政区</div>
+                    <div class="icon-id">province</div>
+                    <div class="icon-meta">z4+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('city')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        市
+                    </div>
+                    <div class="icon-name">地级市</div>
+                    <div class="icon-id">city</div>
+                    <div class="icon-meta">z6+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('district')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        区
+                    </div>
+                    <div class="icon-name">区县</div>
+                    <div class="icon-id">district</div>
+                    <div class="icon-meta">z9+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('town')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        镇
+                    </div>
+                    <div class="icon-name">乡镇街道</div>
+                    <div class="icon-id">town</div>
+                    <div class="icon-meta">z11+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('village')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        村
+                    </div>
+                    <div class="icon-name">村/社区</div>
+                    <div class="icon-id">village</div>
+                    <div class="icon-meta">z13+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('capital')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ★
+                    </div>
+                    <div class="icon-name">首都</div>
+                    <div class="icon-id">capital</div>
+                    <div class="icon-meta">z3+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('provincial_capital')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ☆
+                    </div>
+                    <div class="icon-name">省会</div>
+                    <div class="icon-id">provincial_capital</div>
+                    <div class="icon-meta">z5+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('prefecture_city')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ●
+                    </div>
+                    <div class="icon-name">地级市驻地</div>
+                    <div class="icon-id">prefecture_city</div>
+                    <div class="icon-meta">z7+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('boundary_national')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ━
+                    </div>
+                    <div class="icon-name">国界</div>
+                    <div class="icon-id">boundary_national</div>
+                    <div class="icon-meta">z2+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('boundary_provincial')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ┅
+                    </div>
+                    <div class="icon-name">省界</div>
+                    <div class="icon-id">boundary_provincial</div>
+                    <div class="icon-meta">z5+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('boundary_district')">
+                    <div class="icon-display" style="background: #E91E6320; color: #E91E63">
+                        ┈
+                    </div>
+                    <div class="icon-name">区县界</div>
+                    <div class="icon-id">boundary_district</div>
+                    <div class="icon-meta">z9+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-infrastructure">
+            <div class="category-header" style="border-color: #607D8B">
+                <div class="category-icon" style="background: #607D8B">
+                    ⚡
+                </div>
+                <div class="category-title">
+                    <h2>基础设施 </h2>
+                    <span>15 个图标 · #607D8B · 城市基础设施与公用设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('power_plant')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        ⚡
+                    </div>
+                    <div class="icon-name">发电厂</div>
+                    <div class="icon-id">power_plant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('substation')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🔌
+                    </div>
+                    <div class="icon-name">变电站</div>
+                    <div class="icon-id">substation</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('water_plant')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        💧
+                    </div>
+                    <div class="icon-name">水厂</div>
+                    <div class="icon-id">water_plant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('sewage_plant')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🚰
+                    </div>
+                    <div class="icon-name">污水处理厂</div>
+                    <div class="icon-id">sewage_plant</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('communication_tower')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        📡
+                    </div>
+                    <div class="icon-name">通信塔</div>
+                    <div class="icon-id">communication_tower</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('wind_turbine')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🌬️
+                    </div>
+                    <div class="icon-name">风力发电</div>
+                    <div class="icon-id">wind_turbine</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('solar_panel')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        ☀️
+                    </div>
+                    <div class="icon-name">太阳能</div>
+                    <div class="icon-id">solar_panel</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('railway_infra')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🛤️
+                    </div>
+                    <div class="icon-name">铁路线</div>
+                    <div class="icon-id">railway_infra</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('railway_station')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🚉
+                    </div>
+                    <div class="icon-name">火车站</div>
+                    <div class="icon-id">railway_station</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('port')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        ⚓
+                    </div>
+                    <div class="icon-name">港口码头</div>
+                    <div class="icon-id">port</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('airport_runway')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🛫
+                    </div>
+                    <div class="icon-name">机场跑道</div>
+                    <div class="icon-id">airport_runway</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('dam')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🌊
+                    </div>
+                    <div class="icon-name">水坝</div>
+                    <div class="icon-id">dam</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('pipeline')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        🛢️
+                    </div>
+                    <div class="icon-name">管道</div>
+                    <div class="icon-id">pipeline</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('landfill')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        ♻️
+                    </div>
+                    <div class="icon-name">垃圾处理厂</div>
+                    <div class="icon-id">landfill</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('cemetery')">
+                    <div class="icon-display" style="background: #607D8B20; color: #607D8B">
+                        ⚰️
+                    </div>
+                    <div class="icon-name">公墓</div>
+                    <div class="icon-id">cemetery</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <div class="category" id="cat-water_system">
+            <div class="category-header" style="border-color: #008B8B">
+                <div class="category-icon" style="background: #008B8B">
+                    🌊
+                </div>
+                <div class="category-title">
+                    <h2>水系水利 </h2>
+                    <span>12 个图标 · #008B8B · 河流湖泊与水利设施</span>
+                </div>
+            </div>
+    
+            <div class="icons-grid">
+    
+                <div class="icon-card" onclick="copyToClipboard('river')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🌊
+                    </div>
+                    <div class="icon-name">河流</div>
+                    <div class="icon-id">river</div>
+                    <div class="icon-meta">线宽2px · z4+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('lake')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🏞️
+                    </div>
+                    <div class="icon-name">湖泊</div>
+                    <div class="icon-id">lake</div>
+                    <div class="icon-meta">z6+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('reservoir')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        💧
+                    </div>
+                    <div class="icon-name">水库</div>
+                    <div class="icon-id">reservoir</div>
+                    <div class="icon-meta">z8+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('canal')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        〰️
+                    </div>
+                    <div class="icon-name">运河/渠道</div>
+                    <div class="icon-id">canal</div>
+                    <div class="icon-meta">线宽1.5px · z9+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('waterfall')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🌊
+                    </div>
+                    <div class="icon-name">瀑布</div>
+                    <div class="icon-id">waterfall</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('spring')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        ⛲
+                    </div>
+                    <div class="icon-name">泉水</div>
+                    <div class="icon-id">spring</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('glacier')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🧊
+                    </div>
+                    <div class="icon-name">冰川</div>
+                    <div class="icon-id">glacier</div>
+                    <div class="icon-meta">z7+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('wetland')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🦆
+                    </div>
+                    <div class="icon-name">湿地</div>
+                    <div class="icon-id">wetland</div>
+                    <div class="icon-meta">z8+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('coastline')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        〰️
+                    </div>
+                    <div class="icon-name">海岸线</div>
+                    <div class="icon-id">coastline</div>
+                    <div class="icon-meta">线宽2px · z3+</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('reef')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🪨
+                    </div>
+                    <div class="icon-name">礁石</div>
+                    <div class="icon-id">reef</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('island')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🏝️
+                    </div>
+                    <div class="icon-name">岛屿</div>
+                    <div class="icon-id">island</div>
+                    <div class="icon-meta">z6+ · 面填充</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+                <div class="icon-card" onclick="copyToClipboard('pier')">
+                    <div class="icon-display" style="background: #008B8B20; color: #008B8B">
+                        🚢
+                    </div>
+                    <div class="icon-name">码头</div>
+                    <div class="icon-id">pier</div>
+                    <div class="icon-meta">点标记</div>
+                    <button class="copy-btn">复制ID</button>
+                </div>
+        
+            </div>
+        </div>
+    
+        <footer>
+            <p>© 2026 高德风格综合图例库 v3.1 | 完整版</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">包含GB/T 20257-2017地形图标准 + 高德风格POI分类</p>
+            <p style="margin-top: 5px; font-size: 0.85em;">适用于CIM孪大师、UE渲染引擎、数字孪生项目</p>
+        </footer>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target.closest('.icon-card').querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '已复制!';
+                btn.style.background = '#2ECC71';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#4A90E2';
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能标签生成器 - UE数字孪生艺术科技版</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-content {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 16px 24px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #5aaaff, #00d4aa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .logo-text p {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: rgba(0, 212, 170, 0.2);
+      color: #00d4aa;
+      border: 1px solid rgba(0, 212, 170, 0.3);
+    }
+    .btn-primary:hover { background: rgba(0, 212, 170, 0.3); }
+
+    .btn-secondary {
+      background: rgba(90, 170, 255, 0.2);
+      color: #5aaaff;
+      border: 1px solid rgba(90, 170, 255, 0.3);
+    }
+    .btn-secondary:hover:not(:disabled) { background: rgba(90, 170, 255, 0.3); }
+
+    .btn-outline {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-outline:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+
+    .btn-ghost {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      border: none;
+    }
+    .btn-ghost:hover { color: rgba(255, 255, 255, 0.7); }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn svg { width: 16px; height: 16px; }
+
+    .export-options {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .font-settings-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .font-settings-wrap label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .font-family-select, .font-color-input {
+      padding: 6px 12px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .font-family-select option {
+      background: #1a1a2e;
+    }
+
+    .font-color-input {
+      width: 50px;
+      height: 32px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .font-glow-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .font-glow-toggle input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #5aaaff;
+    }
+
+    .font-glow-intensity {
+      width: 80px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .font-glow-intensity::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #5aaaff;
+      cursor: pointer;
+    }
+
+    .font-glow-intensity::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #5aaaff;
+      cursor: pointer;
+      border: none;
+    }
+
+    .font-glow-intensity:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .bg-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .bg-toggle input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #5aaaff;
+    }
+
+    /* 无背景样式 */
+    .tag-container.no-bg .tech-tag {
+      background: transparent !important;
+      border-color: rgba(var(--r), var(--g), var(--b), 0.8) !important;
+    }
+
+    .white-text-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .white-text-toggle input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #5aaaff;
+    }
+
+    /* 白色字体样式 */
+    .tag-container.white-text .tag-text {
+      color: #ffffff !important;
+    }
+
+    .export-format, .style-select-wrap, .res-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .export-format label, .style-select-wrap label, .res-select-wrap label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .format-select, .style-select, .res-select {
+      padding: 6px 12px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .format-select option, .style-select option, .res-select option {
+      background: #1a1a2e;
+    }
+
+    .stats {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    .stats-count { color: rgba(255, 255, 255, 0.5); }
+    .stats-count span { color: #fff; font-weight: 500; }
+
+    .stats-types {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat-type {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-type-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .stat-type-name { color: rgba(255, 255, 255, 0.7); }
+    .stat-type-count { color: rgba(255, 255, 255, 0.4); }
+
+    .main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 96px 24px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 96px;
+      height: 96px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 24px;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+
+    .empty-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tags-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 60px;
+      padding: 20px;
+    }
+
+    .tag-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tag-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      animation: tagIn 0.4s ease backwards;
+    }
+
+    @keyframes tagIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ========== 基础标签结构 ========== */
+    .tech-tag {
+      width: 35px;  /* 从52px减小1/3 */
+      min-height: 60px;  /* 最小高度 */
+      height: auto;      /* 高度自适应 */
+      padding: 10px 3px;  /* 相应调整padding */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tag-icon-wrap {
+      width: 20px;  /* 从24px减小 */
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 6px;
+      position: relative;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .tag-text {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      font-size: 11px;  /* 稍微减小字体 */
+      line-height: 1.4;
+      letter-spacing: 1px;  /* 减小字间距 */
+      text-align: center;
+      margin: 0 auto;
+      font-weight: 300;
+      font-family: var(--tag-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+      /* 修复对齐：使用flex布局 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: auto;      /* 高度自适应 */
+      min-height: 40px;  /* 最小高度 */
+    }
+
+    .tag-text.glow {
+      text-shadow: 0 0 var(--tag-glow-intensity, 5px) currentColor;
+    }
+
+    /* 定位点容器 */
+    .location-pin {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin-top: -2px;
+    }
+
+    .pin-neck {
+      width: 3px;
+      height: 30px;
+      position: relative;
+    }
+
+    .ripple-point {
+      width: 40px;
+      height: 40px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pin-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* 导出按钮 */
+    .tag-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tag-btn {
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: 500;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tag-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    /* ========== 20种扁平化风格 ========== */
+    
+    /* 风格1: 3D立体方块 - 扁平化 */
+    .style-cube3d .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 1);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 4px;
+    }
+    .style-cube3d .tag-icon-wrap {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 4px;
+    }
+    .style-cube3d .tag-text { 
+      color: #ffffff;
+      font-weight: bold;
+      font-family: 'SimHei', '黑体', 'Helvetica Neue', Arial, sans-serif;
+    }
+    .style-cube3d .pin-neck { 
+      background: rgba(var(--r), var(--g), var(--b), 1);
+      width: 1px;
+    }
+    .style-cube3d .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格2: 斜面浮雕 - 扁平化 */
+    .style-bevel .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 8px;
+    }
+    .style-bevel .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border-radius: 6px;
+    }
+    .style-bevel .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-bevel .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.7); }
+    .style-bevel .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格3: 悬浮卡片 - 扁平化 */
+    .style-float .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 10px;
+    }
+    .style-float .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border-radius: 8px;
+    }
+    .style-float .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-float .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-float .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格4: 层叠立体 - 扁平化 */
+    .style-layer .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 6px;
+    }
+    .style-layer .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.4);
+      border-radius: 4px;
+    }
+    .style-layer .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-layer .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-layer .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格5: 内凹立体 - 扁平化 */
+    .style-inset .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.12);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.4);
+      border-radius: 8px;
+    }
+    .style-inset .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border-radius: 6px;
+    }
+    .style-inset .tag-text { color: rgba(var(--r), var(--g), var(--b), 0.9); }
+    .style-inset .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-inset .pin-dot { background: rgba(var(--r), var(--g), var(--b), 0.8); }
+
+    /* 风格6: 外凸立体 - 扁平化 */
+    .style-raised .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 10px;
+    }
+    .style-raised .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 8px;
+    }
+    .style-raised .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-raised .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-raised .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格7: 倒角金属 - 扁平化（简化圆角） */
+    .style-chamfer .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 8px;
+    }
+    .style-chamfer .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 6px;
+    }
+    .style-chamfer .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-chamfer .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.7); }
+    .style-chamfer .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格8: 双边框立体 - 扁平化 */
+    .style-double .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.12);
+      border: 3px solid rgba(var(--r), var(--g), var(--b), 0.6);
+      border-radius: 4px;
+    }
+    .style-double .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 4px;
+    }
+    .style-double .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-double .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.7); width: 4px; }
+    .style-double .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格9: 标签式立体 - 扁平化（简化三角） */
+    .style-label .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 4px 4px 0 0;
+      position: relative;
+    }
+    .style-label .tech-tag::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid rgba(var(--r), var(--g), var(--b), 0.5);
+    }
+    .style-label .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 4px;
+    }
+    .style-label .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-label .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-label .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格10: 圆柱立体 - 扁平化 */
+    .style-cylinder .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.18);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 8px;
+    }
+    .style-cylinder .tag-icon-wrap {
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 6px;
+    }
+    .style-cylinder .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-cylinder .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-cylinder .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* ========== 10种艺术科技融合风格 - 扁平化 ========== */
+
+    /* 风格11: 流光溢彩 - 扁平化 */
+    .style-aurora .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 12px;
+    }
+    .style-aurora .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 10px;
+    }
+    .style-aurora .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-aurora .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-aurora .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格12: 晶格艺术 - 扁平化（简化圆角） */
+    .style-crystal .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 8px;
+    }
+    .style-crystal .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 6px;
+    }
+    .style-crystal .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-crystal .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-crystal .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格13: 赛博朋克 - 扁平化 */
+    .style-cyber .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.1);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.7);
+      border-radius: 2px;
+    }
+    .style-cyber .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.5);
+    }
+    .style-cyber .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-cyber .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.7); }
+    .style-cyber .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格14: 极简几何 - 扁平化 */
+    .style-geo .tech-tag {
+      background: transparent;
+      border: 3px solid rgba(var(--r), var(--g), var(--b), 0.7);
+      border-radius: 0;
+    }
+    .style-geo .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+    }
+    .style-geo .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); font-weight: 300; letter-spacing: 3px; }
+    .style-geo .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.7); width: 4px; }
+    .style-geo .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); border-radius: 2px; }
+
+    /* 风格15: 水墨科技 - 扁平化 */
+    .style-ink .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.12);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.4);
+      border-radius: 16px 4px 16px 4px;
+    }
+    .style-ink .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border-radius: 50%;
+    }
+    .style-ink .tag-text { color: rgba(var(--r), var(--g), var(--b), 0.95); font-weight: 300; }
+    .style-ink .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.4); }
+    .style-ink .pin-dot { background: rgba(var(--r), var(--g), var(--b), 0.9); }
+
+    /* 风格16: 光晕脉冲 - 扁平化 */
+    .style-pulse .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.12);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 50% 50% 8px 8px;
+    }
+    .style-pulse .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 50%;
+    }
+    .style-pulse .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-pulse .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-pulse .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格17: 折纸艺术 - 扁平化（简化圆角） */
+    .style-origami .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 4px;
+    }
+    .style-origami .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 4px;
+    }
+    .style-origami .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-origami .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.6); }
+    .style-origami .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格18: 星空璀璨 - 扁平化 */
+    .style-starry .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.4);
+      border-radius: 16px;
+    }
+    .style-starry .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.25);
+      border-radius: 50%;
+    }
+    .style-starry .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-starry .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-starry .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); }
+
+    /* 风格19: 电路脉络 - 扁平化 */
+    .style-circuit .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.1);
+      border: 2px solid rgba(var(--r), var(--g), var(--b), 0.5);
+      border-radius: 4px;
+    }
+    .style-circuit .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.4);
+    }
+    .style-circuit .tag-text { color: rgba(var(--r), var(--g), var(--b), 1); }
+    .style-circuit .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-circuit .pin-dot { background: rgba(var(--r), var(--g), var(--b), 1); border-radius: 2px; }
+
+    /* 风格20: 琉璃透明 - 扁平化 */
+    .style-glassart .tech-tag {
+      background: rgba(var(--r), var(--g), var(--b), 0.15);
+      border: 1px solid rgba(var(--r), var(--g), var(--b), 0.4);
+      border-radius: 12px;
+    }
+    .style-glassart .tag-icon-wrap { 
+      background: rgba(var(--r), var(--g), var(--b), 0.2);
+      border-radius: 8px;
+    }
+    .style-glassart .tag-text { color: rgba(var(--r), var(--g), var(--b), 0.95); }
+    .style-glassart .pin-neck { background: rgba(var(--r), var(--g), var(--b), 0.5); }
+    .style-glassart .pin-dot { background: rgba(var(--r), var(--g), var(--b), 0.9); }
+
+    /* ========== 6大类类型配色 CSS变量 ========== */
+    /* 行政区 - 红色系 */
+    .type-省级行政区 { --r: 255; --g: 80; --b: 80; --r2: 255; --g2: 120; --b2: 120; }
+    .type-地级市 { --r: 255; --g: 100; --b: 100; --r2: 255; --g2: 140; --b2: 140; }
+    .type-区县 { --r: 255; --g: 120; --b: 120; --r2: 255; --g2: 160; --b2: 160; }
+    .type-乡镇街道 { --r: 255; --g: 140; --b: 140; --r2: 255; --g2: 180; --b2: 180; }
+    .type-村\/社区 { --r: 255; --g: 160; --b: 160; --r2: 255; --g2: 200; --b2: 200; }
+    .type-首都 { --r: 255; --g: 60; --b: 60; --r2: 255; --g2: 100; --b2: 100; }
+    .type-省会 { --r: 255; --g: 80; --b: 80; --r2: 255; --g2: 120; --b2: 120; }
+    .type-地级市驻地 { --r: 255; --g: 100; --b: 100; --r2: 255; --g2: 140; --b2: 140; }
+    .type-国界 { --r: 200; --g: 50; --b: 50; --r2: 240; --g2: 90; --b2: 90; }
+    .type-省界 { --r: 255; --g: 100; --b: 100; --r2: 255; --g2: 150; --b2: 150; }
+    .type-区县界 { --r: 255; --g: 130; --b: 130; --r2: 255; --g2: 170; --b2: 170; }
+    
+    /* 交通设施 - 蓝色系 */
+    .type-高速公路 { --r: 50; --g: 150; --b: 255; --r2: 100; --g2: 190; --b2: 255; }
+    .type-国道 { --r: 255; --g: 107; --b: 107; --r2: 255; --g2: 150; --b2: 150; }
+    .type-省道 { --r: 70; --g: 170; --b: 255; --r2: 120; --g2: 200; --b2: 255; }
+    .type-县道 { --r: 90; --g: 190; --b: 255; --r2: 140; --g2: 220; --b2: 255; }
+    .type-乡村路\/小路 { --r: 110; --g: 210; --b: 255; --r2: 160; --g2: 240; --b2: 255; }
+    .type-人行小路 { --r: 130; --g: 230; --b: 255; --r2: 180; --g2: 255; --b2: 255; }
+    .type-时令路 { --r: 150; --g: 200; --b: 255; --r2: 190; --g2: 230; --b2: 255; }
+    .type-建筑中路 { --r: 170; --g: 180; --b: 255; --r2: 210; --g2: 210; --b2: 255; }
+    .type-标准轨铁路 { --r: 180; --g: 160; --b: 120; --r2: 220; --g2: 200; --b2: 160; }
+    .type-窄轨铁路 { --r: 160; --g: 140; --b: 100; --r2: 200; --g2: 180; --b2: 140; }
+    .type-地铁\/轻轨 { --r: 0; --g: 180; --b: 200; --r2: 50; --g2: 220; --b2: 240; }
+    .type-火车站 { --r: 0; --g: 160; --b: 180; --r2: 40; --g2: 200; --b2: 220; }
+    .type-机场 { --r: 0; --g: 150; --b: 255; --r2: 80; --g2: 190; --b2: 255; }
+    .type-港口码头 { --r: 0; --g: 170; --b: 255; --r2: 60; --g2: 210; --b2: 255; }
+    .type-桥梁 { --r: 70; --g: 180; --b: 255; --r2: 120; --g2: 220; --b2: 255; }
+    .type-隧道 { --r: 100; --g: 150; --b: 200; --r2: 150; --g2: 190; --b2: 240; }
+    .type-公交 { --r: 0; --g: 200; --b: 150; --r2: 50; --g2: 240; --b2: 190; }
+    .type-停车场 { --r: 120; --g: 150; --b: 255; --r2: 170; --g2: 190; --b2: 255; }
+    .type-加油站 { --r: 255; --g: 180; --b: 50; --r2: 255; --g2: 220; --b2: 100; }
+    .type-充电桩 { --r: 50; --g: 200; --b: 150; --r2: 100; --g2: 240; --b2: 190; }
+    
+    /* 基础设施 - 灰色系 */
+    .type-发电厂 { --r: 180; --g: 180; --b: 180; --r2: 220; --g2: 220; --b2: 220; }
+    .type-变电站 { --r: 160; --g: 160; --b: 160; --r2: 200; --g2: 200; --b2: 200; }
+    .type-水厂 { --r: 100; --g: 180; --b: 220; --r2: 150; --g2: 220; --b2: 255; }
+    .type-污水处理厂 { --r: 120; --g: 160; --b: 180; --r2: 170; --g2: 200; --b2: 220; }
+    .type-通信塔 { --r: 140; --g: 140; --b: 160; --r2: 190; --g2: 190; --b2: 210; }
+    .type-风力发电 { --r: 150; --g: 200; --b: 180; --r2: 190; --g2: 240; --b2: 220; }
+    .type-太阳能 { --r: 255; --g: 200; --b: 80; --r2: 255; --g2: 240; --b2: 130; }
+    .type-铁路线 { --r: 180; --g: 160; --b: 140; --r2: 220; --g2: 200; --b2: 180; }
+    .type-机场跑道 { --r: 160; --g: 170; --b: 180; --r2: 200; --g2: 210; --b2: 220; }
+    .type-水坝 { --r: 100; --g: 170; --b: 200; --r2: 150; --g2: 210; --b2: 240; }
+    .type-管道 { --r: 180; --g: 150; --b: 120; --r2: 220; --g2: 190; --b2: 160; }
+    .type-垃圾处理厂 { --r: 140; --g: 160; --b: 140; --r2: 190; --g2: 210; --b2: 190; }
+    .type-公墓 { --r: 160; --g: 160; --b: 170; --r2: 200; --g2: 200; --b2: 210; }
+    
+    /* 服务设施 - 绿色系 */
+    .type-餐厅 { --r: 80; --g: 200; --b: 120; --r2: 130; --g2: 240; --b2: 160; }
+    .type-中餐厅 { --r: 255; --g: 100; --b: 80; --r2: 255; --g2: 150; --b2: 130; }
+    .type-西餐厅 { --r: 200; --g: 150; --b: 100; --r2: 240; --g2: 190; --b2: 150; }
+    .type-快餐 { --r: 255; --g: 180; --b: 80; --r2: 255; --g2: 220; --b2: 130; }
+    .type-火锅店 { --r: 255; --g: 100; --b: 80; --r2: 255; --g2: 150; --b2: 130; }
+    .type-烧烤 { --r: 255; --g: 120; --b: 60; --r2: 255; --g2: 170; --b2: 110; }
+    .type-咖啡厅 { --r: 150; --g: 120; --b: 100; --r2: 200; --g2: 170; --b2: 150; }
+    .type-茶馆 { --r: 120; --g: 180; --b: 100; --r2: 170; --g2: 220; --b2: 150; }
+    .type-酒吧 { --r: 180; --g: 100; --b: 180; --r2: 220; --g2: 150; --b2: 220; }
+    .type-面包店 { --r: 220; --g: 180; --b: 120; --r2: 255; --g2: 220; --b2: 170; }
+    .type-甜品店 { --r: 255; --g: 150; --b: 200; --r2: 255; --g2: 200; --b2: 240; }
+    .type-酒店 { --r: 100; --g: 150; --b: 255; --r2: 150; --g2: 190; --b2: 255; }
+    .type-旅馆 { --r: 120; --g: 170; --b: 255; --r2: 170; --g2: 210; --b2: 255; }
+    .type-露营地 { --r: 80; --g: 180; --b: 100; --r2: 130; --g2: 220; --b2: 150; }
+    .type-购物中心 { --r: 255; --g: 120; --b: 180; --r2: 255; --g2: 170; --b2: 220; }
+    .type-超市 { --r: 100; --g: 200; --b: 150; --r2: 150; --g2: 240; --b2: 190; }
+    .type-便利店 { --r: 80; --g: 160; --b: 255; --r2: 130; --g2: 200; --b2: 255; }
+    .type-菜市场 { --r: 120; --g: 200; --b: 100; --r2: 170; --g2: 240; --b2: 150; }
+    .type-医院 { --r: 255; --g: 100; --b: 120; --r2: 255; --g2: 160; --b2: 180; }
+    .type-综合医院 { --r: 255; --g: 100; --b: 120; --r2: 255; --g2: 160; --b2: 180; }
+    .type-专科医院 { --r: 255; --g: 120; --b: 140; --r2: 255; --g2: 170; --b2: 190; }
+    .type-诊所 { --r: 255; --g: 140; --b: 160; --r2: 255; --g2: 190; --b2: 210; }
+    .type-急救中心 { --r: 255; --g: 80; --b: 100; --r2: 255; --g2: 130; --b2: 150; }
+    .type-药店 { --r: 80; --g: 200; --b: 150; --r2: 130; --g2: 240; --b2: 190; }
+    .type-卫生服务中心 { --r: 100; --g: 220; --b: 180; --r2: 150; --g2: 255; --b2: 220; }
+    .type-疾控中心 { --r: 100; --g: 200; --b: 255; --r2: 150; --g2: 240; --b2: 255; }
+    .type-血站 { --r: 255; --g: 100; --b: 100; --r2: 255; --g2: 150; --b2: 150; }
+    .type-养老院 { --r: 200; --g: 180; --b: 140; --r2: 240; --g2: 220; --b2: 190; }
+    .type-宠物医院 { --r: 180; --g: 140; --b: 200; --r2: 220; --g2: 190; --b2: 240; }
+    .type-高等院校 { --r: 100; --g: 100; --b: 200; --r2: 150; --g2: 150; --b2: 255; }
+    .type-高中 { --r: 120; --g: 120; --b: 220; --r2: 170; --g2: 170; --b2: 255; }
+    .type-初中 { --r: 140; --g: 140; --b: 240; --r2: 190; --g2: 190; --b2: 255; }
+    .type-小学 { --r: 160; --g: 160; --b: 255; --r2: 200; --g2: 200; --b2: 255; }
+    .type-幼儿园 { --r: 255; --g: 160; --b: 200; --r2: 255; --g2: 210; --b2: 240; }
+    .type-职业学校 { --r: 180; --g: 160; --b: 220; --r2: 220; --g2: 200; --b2: 255; }
+    .type-培训机构 { --r: 200; --g: 180; --b: 200; --r2: 240; --g2: 220; --b2: 240; }
+    .type-科研院所 { --r: 100; --g: 140; --b: 200; --r2: 150; --g2: 190; --b2: 255; }
+    .type-图书馆 { --r: 180; --g: 140; --b: 100; --r2: 220; --g2: 190; --b2: 150; }
+    .type-风景区 { --r: 80; --g: 200; --b: 120; --r2: 130; --g2: 240; --b2: 160; }
+    .type-公园 { --r: 80; --g: 220; --b: 100; --r2: 130; --g2: 255; --b2: 150; }
+    .type-海滩 { --r: 100; --g: 200; --b: 255; --r2: 150; --g2: 240; --b2: 255; }
+    .type-博物馆 { --r: 180; --g: 140; --b: 100; --r2: 220; --g2: 190; --b2: 150; }
+    .type-寺庙 { --r: 200; --g: 160; --b: 100; --r2: 240; --g2: 210; --b2: 150; }
+    .type-观景台 { --r: 150; --g: 200; --b: 150; --r2: 200; --g2: 240; --b2: 200; }
+    .type-电影院 { --r: 180; --g: 120; --b: 200; --r2: 220; --g2: 170; --b2: 240; }
+    .type-KTV { --r: 200; --g: 100; --b: 180; --r2: 240; --g2: 150; --b2: 220; }
+    .type-健身房 { --r: 100; --g: 180; --b: 200; --r2: 150; --g2: 220; --b2: 240; }
+    .type-游戏厅 { --r: 255; --g: 150; --b: 100; --r2: 255; --g2: 200; --b2: 150; }
+    .type-银行 { --r: 200; --g: 160; --b: 80; --r2: 240; --g2: 200; --b2: 130; }
+    .type-ATM { --r: 220; --g: 180; --b: 100; --r2: 255; --g2: 220; --b2: 150; }
+    .type-派出所 { --r: 80; --g: 140; --b: 220; --r2: 130; --g2: 190; --b2: 255; }
+    .type-政府机构 { --r: 200; --g: 100; --b: 100; --r2: 240; --g2: 150; --b2: 150; }
+    .type-邮局 { --r: 150; --g: 100; --b: 200; --r2: 200; --g2: 150; --b2: 240; }
+    .type-厕所 { --r: 100; --g: 180; --b: 200; --r2: 150; --g2: 220; --b2: 240; }
+    
+    /* 工业设施 - 橙色系 */
+    .type-重工业 { --r: 200; --g: 120; --b: 60; --r2: 240; --g2: 160; --b2: 100; }
+    .type-轻工业 { --r: 220; --g: 160; --b: 80; --r2: 255; --g2: 200; --b2: 120; }
+    .type-电子厂 { --r: 100; --g: 180; --b: 220; --r2: 150; --g2: 220; --b2: 255; }
+    .type-纺织厂 { --r: 220; --g: 140; --b: 180; --r2: 255; --g2: 190; --b2: 220; }
+    .type-食品加工厂 { --r: 240; --g: 180; --b: 100; --r2: 255; --g2: 220; --b2: 150; }
+    .type-化工厂 { --r: 200; --g: 100; --b: 200; --r2: 240; --g2: 150; --b2: 240; }
+    .type-仓库 { --r: 180; --g: 160; --b: 140; --r2: 220; --g2: 200; --b2: 180; }
+    .type-物流园 { --r: 200; --g: 140; --b: 100; --r2: 240; --g2: 190; --b2: 150; }
+    .type-矿山 { --r: 160; --g: 140; --b: 120; --r2: 200; --g2: 180; --b2: 160; }
+    
+    /* 水系设施 - 青色系 */
+    .type-河流 { --r: 0; --g: 180; --b: 220; --r2: 50; --g2: 220; --b2: 255; }
+    .type-湖泊 { --r: 0; --g: 160; --b: 200; --r2: 50; --g2: 200; --b2: 240; }
+    .type-水库 { --r: 0; --g: 170; --b: 210; --r2: 50; --g2: 210; --b2: 250; }
+    .type-运河\/渠道 { --r: 50; --g: 190; --b: 230; --r2: 100; --g2: 230; --b2: 255; }
+    .type-瀑布 { --r: 80; --g: 200; --b: 240; --r2: 130; --g2: 240; --b2: 255; }
+    .type-泉水 { --r: 100; --g: 210; --b: 250; --r2: 150; --g2: 250; --b2: 255; }
+    .type-冰川 { --r: 150; --g: 220; --b: 255; --r2: 200; --g2: 255; --b2: 255; }
+    .type-湿地 { --r: 80; --g: 180; --b: 160; --r2: 130; --g2: 220; --b2: 200; }
+    .type-海岸线 { --r: 0; --g: 200; --b: 230; --r2: 50; --g2: 240; --b2: 255; }
+    .type-礁石 { --r: 140; --g: 160; --b: 180; --r2: 190; --g2: 200; --b2: 220; }
+    .type-岛屿 { --r: 60; --g: 200; --b: 180; --r2: 110; --g2: 240; --b2: 220; }
+    .type-码头 { --r: 0; --g: 180; --b: 220; --r2: 50; --g2: 220; --b2: 255; }
+    
+    /* 默认 */
+    .type-POI { --r: 200; --g: 200; --b: 200; --r2: 230; --g2: 230; --b2: 230; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: rgba(20, 20, 30, 0.95);
+      border: 1px solid rgba(90, 170, 255, 0.3);
+      border-radius: 8px;
+      padding: 12px 24px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 1.7s forwards;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    .ue-tips {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(90, 170, 255, 0.1);
+      border: 1px solid rgba(90, 170, 255, 0.2);
+      border-radius: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+    }
+
+    .ue-tips strong { color: #5aaaff; }
+    .ue-tips code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      color: #00d4aa;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(90, 170, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(90, 170, 255, 0.5);
+    }
+
+    @media (max-width: 640px) {
+      .header-content { padding: 12px 16px; }
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .controls { width: 100%; justify-content: flex-start; }
+      .btn { padding: 6px 12px; font-size: 12px; }
+      .main { padding: 20px 16px; }
+      .tags-grid { gap: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">🏷️</div>
+          <div class="logo-text">
+            <h1>智能标签生成器</h1>
+            <p>UE数字孪生 · 艺术科技融合 · 20种扁平风格</p>
+          </div>
+        </div>
+        <div class="controls">
+          <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            导入 Excel
+          </button>
+          <button class="btn btn-secondary" id="exportAllBtn" onclick="exportAllTags()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            导出全部
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('traffic')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            交通设施
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('admin')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            行政区
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('poi')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            服务设施
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('infrastructure')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            基础设施
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('industry')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path></svg>
+            工业设施
+          </button>
+          <button class="btn btn-outline" onclick="loadSampleData('water')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+            水系设施
+          </button>
+          <button class="btn btn-outline" id="exportSampleBtn" onclick="exportSampleData()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            导出示例
+          </button>
+          <button class="btn btn-outline" id="clearBtn" onclick="clearData()" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            清空
+          </button>
+          <button class="btn btn-ghost" onclick="downloadTemplate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            模板
+          </button>
+        </div>
+      </div>
+      
+      <div class="export-options">
+        <div class="export-format">
+          <label>导出格式:</label>
+          <select class="format-select" id="exportFormat">
+            <option value="tga">TGA (UE推荐)</option>
+            <option value="png">PNG (透明)</option>
+            <option value="bmp">BMP (24位)</option>
+            <option value="jpg">JPG (白色背景)</option>
+            <option value="json">JSON (CIM孪大师)</option>
+            <option value="cim">CIM标准格式</option>
+          </select>
+        </div>
+        <div class="style-select-wrap">
+          <label>标签风格:</label>
+          <select class="style-select" id="styleSelect" onchange="changeStyle()">
+            <optgroup label="基础扁平">
+              <option value="cube3d">1. 方块</option>
+              <option value="bevel">2. 圆角</option>
+              <option value="float">3. 卡片</option>
+              <option value="layer">4. 边框</option>
+              <option value="inset">5. 内框</option>
+              <option value="raised">6. 高亮</option>
+              <option value="chamfer">7. 倒角</option>
+              <option value="double">8. 双边</option>
+              <option value="label">9. 标签</option>
+              <option value="cylinder">10. 椭圆</option>
+            </optgroup>
+            <optgroup label="艺术扁平">
+              <option value="aurora">11. 渐变</option>
+              <option value="crystal">12. 晶格</option>
+              <option value="cyber">13. 赛博</option>
+              <option value="geo">14. 几何</option>
+              <option value="ink">15. 水墨</option>
+              <option value="pulse">16. 脉冲</option>
+              <option value="origami">17. 折纸</option>
+              <option value="starry">18. 星空</option>
+              <option value="circuit">19. 电路</option>
+              <option value="glassart">20. 玻璃</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="res-select-wrap">
+          <label>输出分辨率:</label>
+          <select class="res-select" id="resSelect">
+            <option value="1">1x (标准)</option>
+            <option value="2">2x (高清)</option>
+            <option value="4">4x (超清)</option>
+            <option value="8">8x (8K)</option>
+            <option value="16" selected>16x (16K超高清)</option>
+          </select>
+        </div>
+        <div class="font-settings-wrap">
+          <label>字体:</label>
+          <select class="font-family-select" id="fontFamilySelect" onchange="applyStyleSettings()">
+            <option value="default">系统默认</option>
+            <option value="Microsoft YaHei, 微软雅黑, sans-serif">微软雅黑</option>
+            <option value="Source Han Sans SC, Noto Sans SC, 思源黑体, sans-serif">思源黑体</option>
+            <option value="SimSun, 宋体, serif">宋体</option>
+            <option value="SimHei, 黑体, sans-serif">黑体</option>
+            <option value="KaiTi, 楷体, serif">楷体</option>
+          </select>
+          <label class="font-glow-toggle">
+            <input type="checkbox" id="fontGlowToggle" onchange="applyStyleSettings()">
+            发光
+          </label>
+          <input type="range" class="font-glow-intensity" id="fontGlowIntensity" min="1" max="20" value="5" disabled oninput="applyStyleSettings()">
+          <label class="bg-toggle">
+            <input type="checkbox" id="bgToggle" checked onchange="applyStyleSettings()">
+            标签背景
+          </label>
+          <label class="white-text-toggle">
+            <input type="checkbox" id="whiteTextToggle" onchange="applyStyleSettings()">
+            白色字体
+          </label>
+        </div>
+      </div>
+      
+      <div class="stats" id="stats" style="display: none;">
+        <span class="stats-count">共 <span id="tagCount">0</span> 个标签</span>
+        <div class="stats-types" id="statsTypes"></div>
+      </div>
+      
+      <div class="ue-tips">
+        <strong>UE/CIM孪大师 20种扁平标签:</strong> 
+        6大类图例：行政区🏛️、交通设施🛣️、基础设施⚡、服务设施🏥、工业设施🏭、水系设施🌊。
+        推荐 <code>8x/16x</code> 分辨率导入UE，设置 <code>Translucent</code> 混合模式。
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">📂</div>
+      <h3 class="empty-title">暂无标签数据</h3>
+      <p class="empty-desc">请导入 Excel 文件，或点击上方按钮加载示例数据预览</p>
+      <div class="empty-actions">
+        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          导入 Excel
+        </button>
+      </div>
+    </div>
+    <div id="tagsGrid" class="tags-grid style-cube3d" style="display: none;"></div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ========== 6大类图例 Emoji图标映射 ==========
+    const iconSVGs = {
+      // ========== 行政区 ==========
+      '省级行政区': '🏛️',
+      '地级市': '🏢',
+      '区县': '🏘️',
+      '乡镇街道': '🏘️',
+      '村/社区': '🏘️',
+      '首都': '★',
+      '省会': '☆',
+      '地级市驻地': '●',
+      '国界': '━',
+      '省界': '┅',
+      '区县界': '┈',
+      
+      // ========== 交通设施 ==========
+      '高速公路': '🛣️',
+      '国道': 'G',
+      '省道': 'S',
+      '县道': 'X',
+      '乡村路/小路': 'Y',
+      '人行小路': '人',
+      '时令路': '令',
+      '建筑中路': '施',
+      '标准轨铁路': '🛤️',
+      '窄轨铁路': '轨',
+      '地铁/轻轨': '🚇',
+      '火车站': '🚉',
+      '机场': '✈️',
+      '港口码头': '⚓',
+      '桥梁': '🌉',
+      '隧道': '🚇',
+      '公交': '🚌',
+      '停车场': 'P',
+      '加油站': '⛽',
+      '充电桩': '🔌',
+      
+      // ========== 基础设施 ==========
+      '发电厂': '⚡',
+      '变电站': '⚡️',
+      '水厂': '💧',
+      '污水处理厂': '🚰',
+      '通信塔': '📡',
+      '风力发电': '🌬️',
+      '太阳能': '☀️',
+      '铁路线': '🛤️',
+      '机场跑道': '🛫',
+      '水坝': '🌊',
+      '管道': '🛢️',
+      '垃圾处理厂': '♻️',
+      '公墓': '⚰️',
+      
+      // ========== 服务设施 ==========
+      // 餐饮
+      '餐厅': '🍴',
+      '中餐厅': '🥢',
+      '西餐厅': '🍽️',
+      '快餐': '🍔',
+      '火锅店': '🍲',
+      '烧烤': '🔥',
+      '咖啡厅': '☕',
+      '茶馆': '🍵',
+      '酒吧': '🍺',
+      '面包店': '🥐',
+      '甜品店': '🍰',
+      // 住宿
+      '酒店': '🏨',
+      '旅馆': '🛏️',
+      '露营地': '⛺',
+      // 购物
+      '购物中心': '🛍️',
+      '超市': '🛒',
+      '便利店': '🏪',
+      '菜市场': '🥬',
+      // 医疗
+      '医院': '🏥',
+      '综合医院': '🏥',
+      '专科医院': '医',
+      '诊所': '诊',
+      '急救中心': '🚑',
+      '药店': '💊',
+      '卫生服务中心': '社',
+      '疾控中心': 'CDC',
+      '血站': '🩸',
+      '养老院': '👴',
+      '宠物医院': '🐕',
+      // 教育
+      '高等院校': '🎓',
+      '高中': '高',
+      '初中': '中',
+      '小学': '小',
+      '幼儿园': '幼',
+      '职业学校': '职',
+      '培训机构': '训',
+      '科研院所': '研',
+      '图书馆': '📚',
+      // 旅游休闲
+      '风景区': '⛰️',
+      '公园': '🌳',
+      '海滩': '🏖️',
+      '博物馆': '🏛️',
+      '寺庙': '⛩️',
+      '观景台': '🔭',
+      '电影院': '🎬',
+      'KTV': '🎤',
+      '健身房': '💪',
+      '游戏厅': '🎮',
+      // 行政服务
+      '银行': '🏦',
+      'ATM': '💳',
+      '派出所': '👮',
+      '政府机构': '🏛️',
+      '邮局': '📮',
+      '厕所': '🚻',
+      
+      // ========== 工业设施 ==========
+      '重工业': '🏭',
+      '轻工业': '工',
+      '电子厂': '💻',
+      '纺织厂': '🧵',
+      '食品加工厂': '🥫',
+      '化工厂': '⚗️',
+      '仓库': '📦',
+      '物流园': '🚛',
+      '矿山': '⛏️',
+      
+      // ========== 水系设施 ==========
+      '河流': '🌊',
+      '湖泊': '🏞️',
+      '水库': '💧',
+      '运河/渠道': '〰️',
+      '瀑布': '🌊',
+      '泉水': '⛲',
+      '冰川': '🧊',
+      '湿地': '🦆',
+      '海岸线': '〰️',
+      '礁石': '🪨',
+      '岛屿': '🏝️',
+      '码头': '🚢',
+      
+      // 默认
+      'POI': '📍',
+    };
+
+    // 6大类类型颜色映射
+    const typeColors = {
+      // 行政区 - 红色系
+      '省级行政区': '#ff5050',
+      '地级市': '#ff6464',
+      '区县': '#ff7878',
+      '乡镇街道': '#ff8c8c',
+      '村/社区': '#ffa0a0',
+      '首都': '#ff3c3c',
+      '省会': '#ff5050',
+      '地级市驻地': '#ff6464',
+      '国界': '#c83232',
+      '省界': '#ff5050',
+      '区县界': '#ff8282',
+      
+      // 交通设施 - 蓝色系
+      '高速公路': '#3296ff',
+      '国道': '#ff6b6b',
+      '省道': '#46aaff',
+      '县道': '#5abeff',
+      '乡村路/小路': '#6ed2ff',
+      '人行小路': '#82e6ff',
+      '时令路': '#96c8ff',
+      '建筑中路': '#aab4ff',
+      '标准轨铁路': '#b4a08c',
+      '窄轨铁路': '#a08c64',
+      '地铁/轻轨': '#00b4c8',
+      '火车站': '#00a0b4',
+      '机场': '#3296ff',
+      '港口码头': '#2aaaff',
+      '桥梁': '#46b4ff',
+      '隧道': '#6496c8',
+      '公交': '#00c896',
+      '停车场': '#7896ff',
+      '加油站': '#ffb432',
+      '充电桩': '#32c896',
+      
+      // 基础设施 - 灰色系
+      '发电厂': '#b4b4b4',
+      '变电站': '#a0a0a0',
+      '水厂': '#64b4dc',
+      '污水处理厂': '#78a0b4',
+      '通信塔': '#8c8ca0',
+      '风力发电': '#96c8b4',
+      '太阳能': '#ffc850',
+      '铁路线': '#b4a08c',
+      '机场跑道': '#a0aab4',
+      '水坝': '#64aac8',
+      '管道': '#b49678',
+      '垃圾处理厂': '#8ca08c',
+      '公墓': '#a0a0aa',
+      
+      // 服务设施 - 绿色系
+      '餐厅': '#50c878',
+      '中餐厅': '#ff6450',
+      '西餐厅': '#c89664',
+      '快餐': '#ffb450',
+      '火锅店': '#ff6450',
+      '烧烤': '#ff783c',
+      '咖啡厅': '#967864',
+      '茶馆': '#78b464',
+      '酒吧': '#b464b4',
+      '面包店': '#dcb478',
+      '甜品店': '#ff96c8',
+      '酒店': '#6496ff',
+      '旅馆': '#78aaff',
+      '露营地': '#50b464',
+      '购物中心': '#ff78b4',
+      '超市': '#64c896',
+      '便利店': '#50a0ff',
+      '菜市场': '#78c864',
+      '医院': '#ff6478',
+      '综合医院': '#ff6478',
+      '专科医院': '#ff788c',
+      '诊所': '#ff8ca0',
+      '急救中心': '#ff5064',
+      '药店': '#50c896',
+      '卫生服务中心': '#64dcb4',
+      '疾控中心': '#64c8ff',
+      '血站': '#ff6464',
+      '养老院': '#c8b48c',
+      '宠物医院': '#b48cc8',
+      '高等院校': '#6464c8',
+      '高中': '#7878dc',
+      '初中': '#8c8cf0',
+      '小学': '#a0a0ff',
+      '幼儿园': '#ffa0c8',
+      '职业学校': '#b4a0dc',
+      '培训机构': '#c8b4c8',
+      '科研院所': '#648cc8',
+      '图书馆': '#b48c64',
+      '风景区': '#50c878',
+      '公园': '#50dc64',
+      '海滩': '#64c8ff',
+      '博物馆': '#b48c64',
+      '寺庙': '#c8a064',
+      '观景台': '#96c896',
+      '电影院': '#b478c8',
+      'KTV': '#c864b4',
+      '健身房': '#64b4c8',
+      '游戏厅': '#ff9664',
+      '银行': '#c8a050',
+      'ATM': '#dcb464',
+      '派出所': '#508cdc',
+      '政府机构': '#c86464',
+      '邮局': '#9664c8',
+      '厕所': '#64b4c8',
+      
+      // 工业设施 - 橙色系
+      '重工业': '#c8783c',
+      '轻工业': '#e0a050',
+      '电子厂': '#64b4dc',
+      '纺织厂': '#dc8cb4',
+      '食品加工厂': '#f0b464',
+      '化工厂': '#c864c8',
+      '仓库': '#b4a08c',
+      '物流园': '#c88c64',
+      '矿山': '#a08c78',
+      
+      // 水系设施 - 青色系
+      '河流': '#00b4dc',
+      '湖泊': '#00a0c8',
+      '水库': '#00aad2',
+      '运河/渠道': '#32bee6',
+      '瀑布': '#50c8f0',
+      '泉水': '#64d2ff',
+      '冰川': '#96dcff',
+      '湿地': '#50b4a0',
+      '海岸线': '#00f0ff',
+      '礁石': '#8ca0b4',
+      '岛屿': '#3cc8b4',
+      '码头': '#00b4dc',
+      
+      // 默认
+      'POI': '#c8c8c8'
+    };
+
+    // 6大类示例数据
+    const sampleData = {
+      traffic: [
+        { 标签名称: 'G30连霍高速', 类型: '高速公路' },
+        { 标签名称: 'G312国道', 类型: '国道' },
+        { 标签名称: 'S228省道', 类型: '省道' },
+        { 标签名称: 'X001县道', 类型: '县道' },
+        { 标签名称: '乡村路Y101', 类型: '乡村路/小路' },
+        { 标签名称: '人行小路', 类型: '人行小路' },
+        { 标签名称: '时令路', 类型: '时令路' },
+        { 标签名称: '施工中', 类型: '建筑中路' },
+        { 标签名称: '兰新铁路', 类型: '标准轨铁路' },
+        { 标签名称: '窄轨专线', 类型: '窄轨铁路' },
+        { 标签名称: '地铁1号线', 类型: '地铁/轻轨' },
+        { 标签名称: '奇台火车站', 类型: '火车站' },
+        { 标签名称: '江布拉克机场', 类型: '机场' },
+        { 标签名称: '国际航运港', 类型: '港口码头' },
+        { 标签名称: '跨江大桥', 类型: '桥梁' },
+        { 标签名称: '南山隧道', 类型: '隧道' },
+        { 标签名称: '1路公交', 类型: '公交' },
+        { 标签名称: '中心停车场', 类型: '停车场' },
+        { 标签名称: '中石油加油站', 类型: '加油站' },
+        { 标签名称: '新能源充电站', 类型: '充电桩' },
+      ],
+      admin: [
+        { 标签名称: '新疆维吾尔自治区', 类型: '省级行政区' },
+        { 标签名称: '昌吉回族自治州', 类型: '地级市' },
+        { 标签名称: '奇台县', 类型: '区县' },
+        { 标签名称: '奇台镇', 类型: '乡镇街道' },
+        { 标签名称: '东湾村', 类型: '村/社区' },
+        { 标签名称: '北京', 类型: '首都' },
+        { 标签名称: '乌鲁木齐', 类型: '省会' },
+        { 标签名称: '奇台县城', 类型: '地级市驻地' },
+        { 标签名称: '中哈国界', 类型: '国界' },
+        { 标签名称: '新甘省界', 类型: '省界' },
+        { 标签名称: '县界', 类型: '区县界' },
+      ],
+      poi: [
+        { 标签名称: '人民餐厅', 类型: '餐厅' },
+        { 标签名称: '川味火锅', 类型: '火锅店' },
+        { 标签名称: '星巴克', 类型: '咖啡厅' },
+        { 标签名称: '喜来登酒店', 类型: '酒店' },
+        { 标签名称: '奇台购物中心', 类型: '购物中心' },
+        { 标签名称: '人民医院', 类型: '医院' },
+        { 标签名称: '急救中心', 类型: '急救中心' },
+        { 标签名称: '奇台一中', 类型: '高中' },
+        { 标签名称: '中心小学', 类型: '小学' },
+        { 标签名称: '实验幼儿园', 类型: '幼儿园' },
+        { 标签名称: '江布拉克景区', 类型: '风景区' },
+        { 标签名称: '人民公园', 类型: '公园' },
+        { 标签名称: '县博物馆', 类型: '博物馆' },
+        { 标签名称: '工商银行', 类型: '银行' },
+        { 标签名称: '派出所', 类型: '派出所' },
+        { 标签名称: '县政府', 类型: '政府机构' },
+        { 标签名称: '县图书馆', 类型: '图书馆' },
+        { 标签名称: '电影院', 类型: '电影院' },
+        { 标签名称: '公共厕所', 类型: '厕所' },
+      ],
+      infrastructure: [
+        { 标签名称: '火力发电厂', 类型: '发电厂' },
+        { 标签名称: '220kV变电站', 类型: '变电站' },
+        { 标签名称: '自来水厂', 类型: '水厂' },
+        { 标签名称: '污水处理厂', 类型: '污水处理厂' },
+        { 标签名称: '5G基站', 类型: '通信塔' },
+        { 标签名称: '风电场', 类型: '风力发电' },
+        { 标签名称: '光伏电站', 类型: '太阳能' },
+        { 标签名称: '铁路专线', 类型: '铁路线' },
+        { 标签名称: '机场跑道', 类型: '机场跑道' },
+        { 标签名称: '石门子水坝', 类型: '水坝' },
+        { 标签名称: '输油管道', 类型: '管道' },
+        { 标签名称: '垃圾处理厂', 类型: '垃圾处理厂' },
+        { 标签名称: '公墓', 类型: '公墓' },
+      ],
+      industry: [
+        { 标签名称: '钢铁厂', 类型: '重工业' },
+        { 标签名称: '纺织厂', 类型: '轻工业' },
+        { 标签名称: '电子科技园', 类型: '电子厂' },
+        { 标签名称: '棉纺厂', 类型: '纺织厂' },
+        { 标签名称: '食品厂', 类型: '食品加工厂' },
+        { 标签名称: '化肥厂', 类型: '化工厂' },
+        { 标签名称: '物流仓库', 类型: '仓库' },
+        { 标签名称: '物流园', 类型: '物流园' },
+        { 标签名称: '露天煤矿', 类型: '矿山' },
+      ],
+      water: [
+        { 标签名称: '天山融雪河', 类型: '河流' },
+        { 标签名称: '达坂城湖', 类型: '湖泊' },
+        { 标签名称: '石门子水库', 类型: '水库' },
+        { 标签名称: '坎儿井', 类型: '运河/渠道' },
+        { 标签名称: '天山瀑布', 类型: '瀑布' },
+        { 标签名称: '温泉', 类型: '泉水' },
+        { 标签名称: '天山冰川', 类型: '冰川' },
+        { 标签名称: '湿地公园', 类型: '湿地' },
+        { 标签名称: '海岸线', 类型: '海岸线' },
+        { 标签名称: '礁石群', 类型: '礁石' },
+        { 标签名称: '海岛', 类型: '岛屿' },
+        { 标签名称: '货运码头', 类型: '码头' },
+      ]
+    };
+
+    let tags = [];
+    let toastId = 0;
+    let isExporting = false;
+    let currentStyle = 'cube3d';
+    let currentSampleType = '';
+
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    function getIconSVG(type) {
+      return iconSVGs[type] || iconSVGs['POI'];
+    }
+
+    function getIcon(type) {
+      return iconSVGs[type] || iconSVGs['POI'];
+    }
+
+    function getTypeColor(type) {
+      return typeColors[type] || typeColors['POI'];
+    }
+
+    function changeStyle() {
+      const styleSelect = document.getElementById('styleSelect');
+      currentStyle = styleSelect.value;
+      const tagsGrid = document.getElementById('tagsGrid');
+      
+      // 移除所有风格类
+      const allStyles = ['style-cube3d', 'style-bevel', 'style-float', 'style-layer', 
+        'style-inset', 'style-raised', 'style-chamfer', 'style-double', 'style-label', 'style-cylinder',
+        'style-aurora', 'style-crystal', 'style-cyber', 'style-geo', 'style-ink',
+        'style-pulse', 'style-origami', 'style-starry', 'style-circuit', 'style-glassart'];
+      allStyles.forEach(s => tagsGrid.classList.remove(s));
+      
+      // 添加选中的风格类
+      tagsGrid.classList.add(`style-${currentStyle}`);
+      
+      const styleNames = {
+        cube3d: '方块', bevel: '圆角', float: '卡片', layer: '边框',
+        inset: '内框', raised: '高亮', chamfer: '倒角', double: '双边',
+        label: '标签', cylinder: '椭圆',
+        aurora: '渐变', crystal: '晶格', cyber: '赛博', geo: '几何',
+        ink: '水墨', pulse: '脉冲', origami: '折纸', starry: '星空',
+        circuit: '电路', glassart: '玻璃'
+      };
+      showToast(`已切换至: ${styleNames[currentStyle]}风格`);
+    }
+
+    function applyStyleSettings() {
+      // 更新发光强度滑块状态
+      const glowToggle = document.getElementById('fontGlowToggle');
+      const glowIntensity = document.getElementById('fontGlowIntensity');
+      if (glowToggle && glowIntensity) {
+        glowIntensity.disabled = !glowToggle.checked;
+      }
+      
+      // 重新渲染标签以应用样式
+      renderTags();
+    }
+
+    function updateStats() {
+      const stats = document.getElementById('stats');
+      const tagCount = document.getElementById('tagCount');
+      const statsTypes = document.getElementById('statsTypes');
+      const exportAllBtn = document.getElementById('exportAllBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const exportSampleBtn = document.getElementById('exportSampleBtn');
+
+      if (tags.length === 0) {
+        stats.style.display = 'none';
+        exportAllBtn.disabled = true;
+        clearBtn.disabled = true;
+        exportSampleBtn.disabled = true;
+        return;
+      }
+
+      stats.style.display = 'flex';
+      tagCount.textContent = tags.length;
+      exportAllBtn.disabled = false;
+      clearBtn.disabled = false;
+      exportSampleBtn.disabled = false;
+
+      const typeCount = {};
+      tags.forEach(tag => { typeCount[tag.类型] = (typeCount[tag.类型] || 0) + 1; });
+
+      statsTypes.innerHTML = Object.entries(typeCount).slice(0, 8).map(([type, count]) => {
+        const color = getTypeColor(type);
+        return `
+        <span class="stat-type">
+          <span class="stat-type-dot" style="background-color: ${color};"></span>
+          <span class="stat-type-name">${type}</span>
+          <span class="stat-type-count">(${count})</span>
+        </span>
+      `}).join('');
+    }
+
+    function renderTags() {
+      const emptyState = document.getElementById('emptyState');
+      const tagsGrid = document.getElementById('tagsGrid');
+
+      if (tags.length === 0) {
+        emptyState.style.display = 'flex';
+        tagsGrid.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      tagsGrid.style.display = 'flex';
+
+      // 获取字体设置
+      const fontFamily = document.getElementById('fontFamilySelect')?.value || '';
+      const glowEnabled = document.getElementById('fontGlowToggle')?.checked || false;
+      const glowIntensity = document.getElementById('fontGlowIntensity')?.value || 5;
+      const bgEnabled = document.getElementById('bgToggle')?.checked !== false;
+      const whiteTextEnabled = document.getElementById('whiteTextToggle')?.checked || false;
+
+      const fontStyle = [];
+      if (fontFamily && fontFamily !== 'default') {
+        fontStyle.push(`--tag-font-family: ${fontFamily};`);
+      }
+      if (glowEnabled) {
+        fontStyle.push(`--tag-glow-intensity: ${glowIntensity}px;`);
+      }
+
+      const glowClass = glowEnabled ? 'glow' : '';
+      const noBgClass = !bgEnabled ? 'no-bg' : '';
+      const whiteTextClass = whiteTextEnabled ? 'white-text' : '';
+
+      tagsGrid.innerHTML = tags.map((tag, index) => {
+        const icon = getIcon(tag.类型);
+        const typeClass = `type-${tag.类型}`;
+        return `
+          <div class="tag-wrapper">
+            <div class="tag-container ${typeClass} ${noBgClass} ${whiteTextClass}" id="tag-${tag.id}" style="animation-delay: ${index * 0.03}s">
+              <div class="tech-tag">
+                <div class="tag-icon-wrap">${icon}</div>
+                <div class="tag-text ${glowClass}" style="${fontStyle.join(' ')}">${tag.标签名称}</div>
+              </div>
+              <div class="location-pin">
+                <div class="pin-neck"></div>
+                <div class="ripple-point">
+                  <div class="pin-dot"></div>
+                </div>
+              </div>
+            </div>
+            <div class="tag-actions">
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'tga')">TGA</button>
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'png')">PNG</button>
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'bmp')">BMP</button>
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'jpg')">JPG</button>
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'json')">JSON</button>
+              <button class="tag-btn" onclick="exportTag('${tag.id}', 'cim')">CIM</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateStats();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+          if (jsonData.length === 0) {
+            showToast('Excel 文件为空');
+            return;
+          }
+
+          const firstRow = jsonData[0];
+          if (!('标签名称' in firstRow) || !('类型' in firstRow)) {
+            showToast('Excel 格式错误：需要包含「标签名称」和「类型」列');
+            return;
+          }
+
+          tags = jsonData.map((row, index) => ({
+            标签名称: String(row['标签名称'] || ''),
+            类型: String(row['类型'] || ''),
+            id: `${Date.now()}-${index}`,
+          })).filter(tag => tag.标签名称 && tag.类型);
+
+          currentSampleType = '';
+          renderTags();
+          showToast(`成功导入 ${tags.length} 个标签`);
+        } catch (error) {
+          showToast('文件解析失败，请检查文件格式');
+          console.error(error);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      this.value = '';
+    });
+
+    function loadSampleData(type) {
+      const data = sampleData[type] || sampleData.traffic;
+      tags = data.map((tag, index) => ({ ...tag, id: `${Date.now()}-${index}` }));
+      currentSampleType = type;
+      renderTags();
+      const typeNames = {
+        traffic: '交通设施',
+        admin: '行政区',
+        poi: '服务设施',
+        infrastructure: '基础设施',
+        industry: '工业设施',
+        water: '水系设施'
+      };
+      showToast(`已加载${typeNames[type]}示例数据`);
+    }
+
+    function exportSampleData() {
+      if (tags.length === 0) {
+        showToast('没有可导出的示例数据');
+        return;
+      }
+      
+      const exportData = tags.map(tag => ({
+        '标签名称': tag.标签名称,
+        '类型': tag.类型
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '标签数据');
+      
+      const typeNames = {
+        traffic: '交通设施',
+        admin: '行政区',
+        poi: '服务设施',
+        infrastructure: '基础设施',
+        industry: '工业设施',
+        water: '水系设施'
+      };
+      
+      const fileName = currentSampleType 
+        ? `示例数据_${typeNames[currentSampleType] || currentSampleType}.xlsx`
+        : '标签数据.xlsx';
+      
+      XLSX.writeFile(wb, fileName);
+      showToast('示例数据导出成功');
+    }
+
+    function clearData() {
+      tags = [];
+      currentSampleType = '';
+      renderTags();
+      showToast('已清空所有标签');
+    }
+
+    function downloadTemplate() {
+      const templateData = [
+        { 标签名称: '示例标签1', 类型: '机场' },
+        { 标签名称: '示例标签2', 类型: '高速公路' },
+        { 标签名称: '示例标签3', 类型: '医院' },
+      ];
+      const ws = XLSX.utils.json_to_sheet(templateData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '标签模板');
+      XLSX.writeFile(wb, '标签导入模板.xlsx');
+      showToast('模板下载成功');
+    }
+
+    async function canvasToPNG(canvas) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png');
+      });
+    }
+
+    async function canvasToJPG(canvas) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95);
+      });
+    }
+
+    function canvasToTGA(canvas) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      
+      const header = new Uint8Array(18);
+      header[0] = 0; header[1] = 0; header[2] = 2;
+      header[3] = 0; header[4] = 0; header[5] = 0; header[6] = 0;
+      header[7] = 0; header[8] = 0; header[9] = 0; header[10] = 0;
+      header[11] = 0; header[12] = width & 0xFF; header[13] = (width >> 8) & 0xFF;
+      header[14] = 0; header[15] = height & 0xFF; header[16] = (height >> 8) & 0xFF;
+      header[17] = 32; header[17] |= 0x08;
+      
+      const pixelData = new Uint8Array(width * height * 4);
+      let offset = 0;
+      
+      for (let y = height - 1; y >= 0; y--) {
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4;
+          pixelData[offset++] = data[i + 2];
+          pixelData[offset++] = data[i + 1];
+          pixelData[offset++] = data[i];
+          pixelData[offset++] = data[i + 3];
+        }
+      }
+      
+      const footer = new Uint8Array(26);
+      footer[8] = 0x54; footer[9] = 0x52; footer[10] = 0x55; footer[11] = 0x45;
+      footer[12] = 0x56; footer[13] = 0x49; footer[14] = 0x53; footer[15] = 0x49;
+      footer[16] = 0x4F; footer[17] = 0x4E; footer[18] = 0x2D; footer[19] = 0x58;
+      footer[20] = 0x46; footer[21] = 0x49; footer[22] = 0x4C; footer[23] = 0x45;
+      footer[24] = 0x2E; footer[25] = 0x00;
+      
+      return new Blob([header, pixelData, footer], { type: 'image/tga' });
+    }
+
+    function canvasToBMP(canvas) {
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      
+      const fileHeaderSize = 14;
+      const dibHeaderSize = 40;
+      const rowSize = Math.ceil((width * 3) / 4) * 4;
+      const pixelDataSize = rowSize * height;
+      const fileSize = fileHeaderSize + dibHeaderSize + pixelDataSize;
+      
+      const buffer = new ArrayBuffer(fileSize);
+      const view = new DataView(buffer);
+      const bytes = new Uint8Array(buffer);
+      
+      view.setUint8(0, 0x42); view.setUint8(1, 0x4D);
+      view.setUint32(2, fileSize, true);
+      view.setUint32(6, 0, true);
+      view.setUint32(10, fileHeaderSize + dibHeaderSize, true);
+      
+      view.setUint32(14, dibHeaderSize, true);
+      view.setInt32(18, width, true);
+      view.setInt32(22, height, true);
+      view.setUint16(26, 1, true);
+      view.setUint16(28, 24, true);
+      view.setUint32(30, 0, true);
+      view.setUint32(34, pixelDataSize, true);
+      view.setInt32(38, 2835, true);
+      view.setInt32(42, 2835, true);
+      view.setUint32(46, 0, true);
+      view.setUint32(50, 0, true);
+      
+      let offset = fileHeaderSize + dibHeaderSize;
+      for (let y = height - 1; y >= 0; y--) {
+        for (let x = 0; x < width; x++) {
+          const pixelIndex = (y * width + x) * 4;
+          const a = data[pixelIndex + 3] / 255;
+          bytes[offset++] = Math.round(data[pixelIndex + 2] * a);
+          bytes[offset++] = Math.round(data[pixelIndex + 1] * a);
+          bytes[offset++] = Math.round(data[pixelIndex] * a);
+        }
+        const padding = rowSize - (width * 3);
+        for (let p = 0; p < padding; p++) bytes[offset++] = 0;
+      }
+      
+      return new Blob([buffer], { type: 'image/bmp' });
+    }
+
+    // 同步版本：构建标签JSON数据（用于批量导出）
+    function buildTagJSON(tag, index = 0) {
+      // 从typeColors获取颜色，或使用默认灰色
+      const colorHex = typeColors[tag.类型] || '#c8c8c8';
+      
+      // 解析hex颜色为rgb
+      const r = parseInt(colorHex.slice(1, 3), 16) || 200;
+      const g = parseInt(colorHex.slice(3, 5), 16) || 200;
+      const b = parseInt(colorHex.slice(5, 7), 16) || 200;
+      
+      // 获取实际渲染设置
+      const bgEnabled = document.getElementById('bgToggle')?.checked !== false;
+      const whiteTextEnabled = document.getElementById('whiteTextToggle')?.checked || false;
+      const fontFamily = document.getElementById('fontFamilySelect')?.value || 'default';
+      const glowEnabled = document.getElementById('fontGlowToggle')?.checked || false;
+      const glowIntensity = parseInt(document.getElementById('fontGlowIntensity')?.value || 5);
+      
+      // 生成显示名称（每个字符换行）
+      const displayName = tag.标签名称.split('').join('\n');
+      
+      // 生成ID
+      const typePinyin = {
+        '高速公路': 'GS', '国道': 'GD', '省道': 'SD', '县道': 'XD',
+        '乡村路/小路': 'XL', '标准轨铁路': 'TL', '地铁/轻轨': 'DT',
+        '火车站': 'HCZ', '机场': 'JC', '港口码头': 'GK', '桥梁': 'QL',
+        '隧道': 'SD', '公交': 'GJ', '停车场': 'TCC', '加油站': 'JYZ',
+        '充电桩': 'CDZ', '省级行政区': 'XZQ', '地级市': 'DJS',
+        '区县': 'QX', '乡镇街道': 'XZ', '村/社区': 'CSQ', '餐厅': 'CT',
+        '酒店': 'JD', '医院': 'YY', '学校': 'XX', '商场': 'SC',
+        '景区': 'JQ', '公园': 'GY', '银行': 'YH', '派出所': 'PCS',
+        '邮局': 'YZ', '厕所': 'CS', '工厂': 'GC', '仓库': 'CK',
+        '矿山': 'KS', '河流': 'HL', '湖泊': 'HP', '水库': 'SK', '码头': 'MT'
+      }[tag.类型] || 'POI';
+      
+      const id = `${typePinyin}_${String(index + 1).padStart(3, '0')}`;
+      
+      // 根据实际渲染效果计算样式
+      const backgroundColor = bgEnabled ? `rgba(${r},${g},${b},0.2)` : 'transparent';
+      const borderColor = `rgba(${r},${g},${b},0.6)`;
+      const textColor = whiteTextEnabled ? '#ffffff' : `rgba(${r},${g},${b},1)`;
+      
+      return {
+        "vertical_label_adapted": {
+          "id": id,
+          "display_name": displayName,
+          "original_name": tag.标签名称,
+          "label_type": tag.类型,
+          "icon": getIcon(tag.类型),
+          "position": {
+            "longitude": 113.2644,
+            "latitude": 23.1291,
+            "altitude": 10
+          },
+          "style": {
+            "width": 35,
+            "height": "auto",
+            "background_color": backgroundColor,
+            "border_color": borderColor,
+            "border_width": 2,
+            "text_color": textColor,
+            "font_size": 11,
+            "font_family": fontFamily === 'default' ? '' : fontFamily,
+            "text_align": "center",
+            "vertical_mode": true,
+            "leader_length": 60,
+            "glow_enabled": glowEnabled,
+            "glow_intensity": glowIntensity,
+            "background_enabled": bgEnabled,
+            "icon_frame": {
+              "enabled": true,
+              "width": 20,
+              "height": 20,
+              "background_color": `rgba(${r},${g},${b},0.2)`,
+              "border_color": `rgba(${r},${g},${b},0.4)`,
+              "border_width": 1,
+              "border_radius": 4
+            }
+          },
+          "meta": {
+            "source": "智能标签生成器",
+            "version": "1.0",
+            "timestamp": new Date().toISOString()
+          }
+        }
+      };
+    }
+
+    // 判断图标是否为"字"（非emoji，需要特殊样式）
+    function isTextIcon(icon) {
+      if (!icon || icon.length === 0) return false;
+      // 如果图标长度为1且是基本ASCII字符或常见汉字，认为是"字"
+      // emoji通常长度大于1或是特殊unicode字符
+      const code = icon.charCodeAt(0);
+      // 检查是否是emoji（简单判断：如果包含 surrogate pairs 或长度大于1）
+      const hasSurrogate = /[\uD800-\uDFFF]/.test(icon);
+      return !hasSurrogate && icon.length === 1 && (code < 0x2600 || code > 0x27BF);
+    }
+
+    async function exportTagToJSON(tag, index = 0) {
+      // 复用buildTagJSON的逻辑，获取相同的JSON数据
+      const jsonData = buildTagJSON(tag, index);
+      
+      // 检查icon是否为"字"，如果是则添加白色加粗样式
+      const icon = getIcon(tag.类型);
+      if (isTextIcon(icon)) {
+        jsonData.vertical_label_adapted.icon_style = {
+          "color": "#ffffff",
+          "font_weight": "bold",
+          "font_size": 14
+        };
+      }
+      
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+      return blob;
+    }
+
+    // 构建CIM标准格式JSON数据
+    function buildTagCIMJSON(tag, index = 0) {
+      // 生成ID
+      const typePinyin = {
+        '高速公路': 'GS', '国道': 'GD', '省道': 'SD', '县道': 'XD',
+        '乡村路/小路': 'XL', '标准轨铁路': 'TL', '地铁/轻轨': 'DT',
+        '火车站': 'HCZ', '机场': 'JC', '港口码头': 'GK', '桥梁': 'QL',
+        '隧道': 'SD', '公交': 'GJ', '停车场': 'TCC', '加油站': 'JYZ',
+        '充电桩': 'CDZ', '省级行政区': 'XZQ', '地级市': 'DJS',
+        '区县': 'QX', '乡镇街道': 'XZ', '村/社区': 'CSQ', '餐厅': 'CT',
+        '酒店': 'JD', '医院': 'YY', '学校': 'XX', '商场': 'SC',
+        '景区': 'JQ', '公园': 'GY', '银行': 'YH', '派出所': 'PCS',
+        '邮局': 'YZ', '厕所': 'CS', '工厂': 'GC', '仓库': 'CK',
+        '矿山': 'KS', '河流': 'HL', '湖泊': 'HP', '水库': 'SK', '码头': 'MT',
+        '变电站': 'BDZ', '发电厂': 'FDC', '水厂': 'SC', '污水处理厂': 'WSCL'
+      }[tag.类型] || 'POI';
+      
+      const id = `${typePinyin}_${String(index + 1).padStart(3, '0')}`;
+      
+      // 生成显示名称（每个字符换行）
+      const displayName = tag.标签名称.split('').join('\n');
+      
+      // 生成style_template
+      const styleTemplateMap = {
+        '高速公路': 'vertical_highway_blue',
+        '国道': 'vertical_highway_red',
+        '省道': 'vertical_highway_cyan',
+        '县道': 'vertical_highway_lightblue',
+        '省级行政区': 'vertical_admin_red',
+        '地级市': 'vertical_admin_orange',
+        '区县': 'vertical_admin_yellow',
+        '医院': 'vertical_service_red',
+        '学校': 'vertical_service_green',
+        '派出所': 'vertical_service_blue',
+        '公园': 'vertical_service_green',
+        '景区': 'vertical_tourism_green',
+        '变电站': 'vertical_power_purple',
+        '发电厂': 'vertical_power_grey',
+        '桥梁': 'vertical_infra_blue',
+        '隧道': 'vertical_infra_grey',
+        '河流': 'vertical_water_cyan',
+        '湖泊': 'vertical_water_blue',
+        '水库': 'vertical_water_darkblue'
+      };
+      const styleTemplate = styleTemplateMap[tag.类型] || 'vertical_default';
+      
+      const icon = getIcon(tag.类型);
+      
+      // 从typeColors获取颜色，或使用默认灰色
+      const colorHex = typeColors[tag.类型] || '#c8c8c8';
+      
+      // 解析hex颜色为rgb
+      const r = parseInt(colorHex.slice(1, 3), 16) || 200;
+      const g = parseInt(colorHex.slice(3, 5), 16) || 200;
+      const b = parseInt(colorHex.slice(5, 7), 16) || 200;
+      
+      const poiData = {
+        "id": id,
+        "name": displayName,
+        "type": tag.类型,
+        "longitude": 113.2644,
+        "latitude": 23.1291,
+        "altitude": 10,
+        "icon": icon,
+        "style_template": styleTemplate,
+        "icon_frame": {
+          "enabled": true,
+          "width": 20,
+          "height": 20,
+          "background_color": `rgba(${r},${g},${b},0.2)`,
+          "border_color": `rgba(${r},${g},${b},0.4)`,
+          "border_width": 1,
+          "border_radius": 4
+        }
+      };
+      
+      // 如果icon是"字"，添加白色加粗样式
+      if (isTextIcon(icon)) {
+        poiData.icon_style = {
+          "color": "#ffffff",
+          "font_weight": "bold",
+          "font_size": 14
+        };
+      }
+      
+      return poiData;
+    }
+
+    async function exportTagToCIMJSON(tag, index = 0) {
+      const jsonData = {
+        "pois": [buildTagCIMJSON(tag, index)]
+      };
+      
+      const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+      return blob;
+    }
+
+    async function exportTag(id, format) {
+      if (isExporting) {
+        showToast('正在导出中，请稍候...');
+        return;
+      }
+
+      const tagElement = document.getElementById(`tag-${id}`);
+      if (!tagElement) {
+        showToast('标签元素未找到');
+        return;
+      }
+
+      const tag = tags.find(t => t.id === id);
+      if (!tag) return;
+
+      isExporting = true;
+      const resScale = parseInt(document.getElementById('resSelect').value);
+
+      try {
+        tagElement.style.transform = 'none';
+        
+        const canvas = await html2canvas(tagElement, {
+          backgroundColor: null,
+          scale: resScale,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          removeContainer: true,
+          onclone: function(clonedDoc) {
+            const clonedElement = clonedDoc.getElementById(`tag-${id}`);
+            if (clonedElement) {
+              clonedElement.style.animation = 'none';
+              clonedElement.style.transform = 'none';
+            }
+          }
+        });
+
+        tagElement.style.transform = '';
+
+        let blob, ext;
+        switch (format) {
+          case 'tga':
+            blob = canvasToTGA(canvas);
+            ext = 'tga';
+            break;
+          case 'png':
+            blob = await canvasToPNG(canvas);
+            ext = 'png';
+            break;
+          case 'bmp':
+            blob = canvasToBMP(canvas);
+            ext = 'bmp';
+            break;
+          case 'jpg':
+            blob = await canvasToJPG(canvas);
+            ext = 'jpg';
+            break;
+          case 'json':
+            const tagIndex = tags.findIndex(t => t.id === id);
+            blob = await exportTagToJSON(tag, tagIndex);
+            ext = 'json';
+            break;
+          case 'cim':
+            const cimIndex = tags.findIndex(t => t.id === id);
+            blob = await exportTagToCIMJSON(tag, cimIndex);
+            ext = 'json';
+            break;
+          default:
+            blob = canvasToTGA(canvas);
+            ext = 'tga';
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${tag.标签名称}_标签.${ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        showToast(`已导出: ${tag.标签名称}_标签.${ext}`);
+      } catch (error) {
+        showToast('导出失败');
+        console.error(error);
+      } finally {
+        isExporting = false;
+      }
+    }
+
+    async function exportAllTags() {
+      if (tags.length === 0) {
+        showToast('没有可导出的标签');
+        return;
+      }
+
+      if (isExporting) {
+        showToast('正在导出中，请稍候...');
+        return;
+      }
+
+      const format = document.getElementById('exportFormat').value;
+      
+      // JSON格式特殊处理：合并所有标签到一个文件
+      if (format === 'json') {
+        isExporting = true;
+        showToast('正在生成合并JSON文件...');
+        
+        try {
+          const allLabels = [];
+          for (let i = 0; i < tags.length; i++) {
+            const tag = tags[i];
+            const jsonData = buildTagJSON(tag, i);
+            const labelData = jsonData.vertical_label_adapted;
+            
+            // 检查icon是否为"字"，如果是则添加白色加粗样式
+            const icon = getIcon(tag.类型);
+            if (isTextIcon(icon)) {
+              labelData.icon_style = {
+                "color": "#ffffff",
+                "font_weight": "bold",
+                "font_size": 14
+              };
+            }
+            
+            // 从typeColors获取颜色，或使用默认灰色
+            const colorHex = typeColors[tag.类型] || '#c8c8c8';
+            
+            // 解析hex颜色为rgb
+            const r = parseInt(colorHex.slice(1, 3), 16) || 200;
+            const g = parseInt(colorHex.slice(3, 5), 16) || 200;
+            const b = parseInt(colorHex.slice(5, 7), 16) || 200;
+            
+            // 添加icon外框样式
+            labelData.icon_frame = {
+              "enabled": true,
+              "width": 20,
+              "height": 20,
+              "background_color": `rgba(${r},${g},${b},0.2)`,
+              "border_color": `rgba(${r},${g},${b},0.4)`,
+              "border_width": 1,
+              "border_radius": 4
+            };
+            
+            allLabels.push(labelData);
+          }
+          
+          const mergedJSON = {
+            "version": "1.0",
+            "type": "vertical_label_collection",
+            "count": allLabels.length,
+            "labels": allLabels,
+            "meta": {
+              "source": "智能标签生成器",
+              "timestamp": new Date().toISOString()
+            }
+          };
+          
+          const blob = new Blob([JSON.stringify(mergedJSON, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `标签集合_${allLabels.length}个.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          showToast(`成功导出 ${allLabels.length} 个标签到单个JSON文件`);
+        } catch (error) {
+          console.error('导出JSON失败:', error);
+          showToast('导出JSON失败');
+        }
+        
+        isExporting = false;
+        return;
+      }
+      
+      // CIM标准格式特殊处理：合并所有标签到一个文件
+      if (format === 'cim') {
+        isExporting = true;
+        showToast('正在生成CIM标准格式文件...');
+        
+        try {
+          const allPOIs = [];
+          for (let i = 0; i < tags.length; i++) {
+            const tag = tags[i];
+            const poiData = buildTagCIMJSON(tag, i);
+            allPOIs.push(poiData);
+          }
+          
+          const mergedJSON = {
+            "pois": allPOIs
+          };
+          
+          const blob = new Blob([JSON.stringify(mergedJSON, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `CIM_POI集合_${allPOIs.length}个.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          
+          showToast(`成功导出 ${allPOIs.length} 个POI到CIM标准格式`);
+        } catch (error) {
+          console.error('导出CIM格式失败:', error);
+          showToast('导出CIM格式失败');
+        }
+        
+        isExporting = false;
+        return;
+      }
+      
+      showToast(`开始批量导出 ${format.toUpperCase()}...`);
+      
+      isExporting = true;
+      let successCount = 0;
+      const resScale = parseInt(document.getElementById('resSelect').value);
+
+      for (let i = 0; i < tags.length; i++) {
+        const tag = tags[i];
+        try {
+          const tagElement = document.getElementById(`tag-${tag.id}`);
+          if (!tagElement) continue;
+
+          tagElement.style.transform = 'none';
+          
+          const bgColor = format === 'jpg' ? '#FFFFFF' : null;
+          const canvas = await html2canvas(tagElement, {
+            backgroundColor: bgColor,
+            scale: resScale,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            removeContainer: true,
+            onclone: function(clonedDoc) {
+              const clonedElement = clonedDoc.getElementById(`tag-${tag.id}`);
+              if (clonedElement) {
+                clonedElement.style.animation = 'none';
+                clonedElement.style.transform = 'none';
+              }
+            }
+          });
+
+          tagElement.style.transform = '';
+
+          let blob;
+          switch (format) {
+            case 'tga': blob = canvasToTGA(canvas); break;
+            case 'png': blob = await canvasToPNG(canvas); break;
+            case 'bmp': blob = canvasToBMP(canvas); break;
+            case 'jpg': blob = await canvasToJPG(canvas); break;
+            default: blob = canvasToTGA(canvas);
+          }
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${tag.标签名称}_标签.${format}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          successCount++;
+          await new Promise(resolve => setTimeout(resolve, 300));
+        } catch (error) {
+          console.error(`导出标签 ${tag.标签名称} 失败:`, error);
+        }
+      }
+
+      isExporting = false;
+      showToast(`批量导出完成: ${successCount}/${tags.length}`);
+    }
+  </script>
+</body>
+</html>
