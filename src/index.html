@@ -2540,6 +2540,22 @@
             if (clonedElement) {
               clonedElement.style.animation = 'none';
               clonedElement.style.transform = 'none';
+              // 修复 html2canvas 导出时数字/字母左偏移，同时保持中线对齐
+              const tagText = clonedElement.querySelector('.tag-text');
+              if (tagText) {
+                // 移除导致偏移的 full-width
+                tagText.style.fontVariantEastAsian = 'normal';
+                // 所有字符统一用等宽 span 包裹，实现完美中线对齐
+                const text = tagText.textContent;
+                const chars = text.split('');
+                const escapeHtml = (char) => {
+                  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                  return map[char] || char;
+                };
+                tagText.innerHTML = chars.map(c => 
+                  `<span style="display:inline-block;width:1em;text-align:center;">${escapeHtml(c)}</span>`
+                ).join('');
+              }
             }
           }
         });
@@ -2876,6 +2892,22 @@
                 if (clonedElement) {
                   clonedElement.style.animation = 'none';
                   clonedElement.style.transform = 'none';
+                  // 修复 html2canvas 导出时数字/字母左偏移，同时保持中线对齐
+                  const tagText = clonedElement.querySelector('.tag-text');
+                  if (tagText) {
+                    // 移除导致偏移的 full-width
+                    tagText.style.fontVariantEastAsian = 'normal';
+                    // 所有字符统一用等宽 span 包裹，实现完美中线对齐
+                    const text = tagText.textContent;
+                    const chars = text.split('');
+                    const escapeHtml = (char) => {
+                      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                      return map[char] || char;
+                    };
+                    tagText.innerHTML = chars.map(c => 
+                      `<span style="display:inline-block;width:1em;text-align:center;">${escapeHtml(c)}</span>`
+                    ).join('');
+                  }
                 }
               }
             });
